@@ -36,14 +36,15 @@ const ConnectWallet: React.FC = () => {
   }, [signer]);
 
   const renderConnectWalletBtn = () => {
-    return <Button variant="destructive"
-      onClick={open} >
-      Connect Wallet
-    </Button>
+    return (
+      <Button onClick={open}>
+        Connect Wallet
+      </Button>
+    )
   }
 
   const renderConnectedWalletInfo = () => {
-    return <div className="cursor-pointer rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
+    return <div className="cursor-pointer rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-transparent text-foreground border gap-2 hover:bg-[#383838] dark:hover:bg-secondary text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
       onClick={open} >
       <div className="rounded-full mr-2">
         {wallet && <img src={wallet.icon} alt="avatar" className="w-6 h-6" />}
