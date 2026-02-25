@@ -4,13 +4,13 @@
 import React, { useEffect, useState } from "react";
 import { ccc } from "@ckb-ccc/connector-react";
 import { truncateAddress } from "@/utils/stringUtils";
+import { Button } from "./ui/button";
 
 const ConnectWallet: React.FC = () => {
   const { open, wallet } = ccc.useCcc();
   const [balance, setBalance] = useState<string>("");
   const [address, setAddress] = useState<string>("");
   const signer = ccc.useSigner();
-
   useEffect(() => {
     if (!window) {
       return
@@ -36,10 +36,10 @@ const ConnectWallet: React.FC = () => {
   }, [signer]);
 
   const renderConnectWalletBtn = () => {
-    return <div className="cursor-pointer rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base font-bold h-10 sm:h-12 px-4 sm:px-5"
+    return <Button
       onClick={open} >
       Connect Wallet
-    </div>
+    </Button>
   }
 
   const renderConnectedWalletInfo = () => {

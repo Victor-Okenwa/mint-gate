@@ -6,7 +6,8 @@ export default function Home() {
 
   return (
     <main>
-      <ConnectWallet></ConnectWallet>
+      fgjd
+      <ConnectWallet />
     </main>
   );
 }
