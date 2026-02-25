@@ -36,7 +36,7 @@ const ConnectWallet: React.FC = () => {
   }, [signer]);
 
   const renderConnectWalletBtn = () => {
-    return <Button
+    return <Button variant="destructive"
       onClick={open} >
       Connect Wallet
     </Button>
