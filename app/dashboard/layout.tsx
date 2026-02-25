@@ -25,7 +25,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (
         <SidebarProvider>
             <AppSidebar />
-            <main>
+            <main className="flex-1 w-full">
                 <AppHeader />
                 {children}
             </main>
@@ -36,7 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 function AppHeader() {
     return (
-        <nav className="sticky top-0 flex bg-background/80 backdrop-blur-md items-center justify-between px-8 py-6 border-b border-border" >
+        <nav className="sticky top-0 flex bg-background/80 backdrop-blur-md items-center justify-between h-[64.8px] px-4 border-b border-border" >
             <SidebarTrigger />
             <Button variant="outline">Disconnect</Button>
         </nav >
@@ -45,7 +45,7 @@ function AppHeader() {
 
 function AppSidebar() {
     return (
-        <Sidebar className="w-60 border-r border-border" collapsible="icon">
+        <Sidebar className="border-r border-border" collapsible="icon">
             <div className="px-4 py-5 border-b border-border">
                 <Link href="/dashboard" className="text-sm font-semibold tracking-widest uppercase">Mint Gate</Link>
             </div>
