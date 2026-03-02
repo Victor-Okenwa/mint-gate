@@ -18,33 +18,34 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 
-export const createCommunitySchema = z.object({
+export const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
     description: z.string().min(1, "Description is required"),
     rules: z.string().optional(),
-    mintPrice: z.string().transform((s) => (s === "" ? 0 : Number(s))),
+    mintPrice: z.string(),
 });
 
-export type CreateCommunityFormValues = z.infer<typeof createCommunitySchema>;
+type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateCommunityPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const form = useForm<CreateCommunityFormValues>({
-        resolver: zodResolver(createCommunitySchema),
+    const form = useForm<FormValues>({
+        resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
             description: "",
             rules: "",
-            mintPrice: 0,
+            mintPrice: "0",
         },
     });
 
-    async function handleSubmit(values: CreateCommunityFormValues) {
+    async function handleSubmit(values: FormValues) {
+        const mintPriceCkb = values.mintPrice === "" ? 0 : Number(values.mintPrice);
         setIsSubmitting(true);
         try {
             // TODO: Implement on-chain deployment
-            console.log("Deploying community:", values);
+            console.log("Deploying community:", { ...values, mintPrice: mintPriceCkb });
             await new Promise((r) => setTimeout(r, 1500)); // placeholder
         } finally {
             setIsSubmitting(false);
