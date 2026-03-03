@@ -1,10 +1,10 @@
-/* eslint-disable*/
 "use client";
+/* eslint-disable*/
 
 import { ccc } from "@ckb-ccc/connector-react";
 import { CSSProperties } from "react";
 import React from "react";
-
+import {  } from "@ckb-ccc/core";
 export function LayoutProvider({ children }: { children: React.ReactNode }) {
     const defaultClient = React.useMemo(() => {
         return process.env.NEXT_PUBLIC_IS_MAINNET === "true"

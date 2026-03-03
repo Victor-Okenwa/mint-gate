@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { ccc } from "@ckb-ccc/connector-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 export const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
     description: z.string().min(1, "Description is required"),
-    rules: z.string().optional(),
+    guidelines: z.string().optional(),
     mintPrice: z.string(),
 });
 
@@ -35,7 +36,7 @@ export default function CreateCommunityPage() {
         defaultValues: {
             name: "",
             description: "",
-            rules: "",
+            guidelines: "",
             mintPrice: "0",
         },
     });
@@ -47,6 +48,7 @@ export default function CreateCommunityPage() {
             // TODO: Implement on-chain deployment
             console.log("Deploying community:", { ...values, mintPrice: mintPriceCkb });
             await new Promise((r) => setTimeout(r, 1500)); // placeholder
+
         } finally {
             setIsSubmitting(false);
         }
@@ -101,15 +103,18 @@ export default function CreateCommunityPage() {
 
                     <FormField
                         control={form.control}
-                        name="rules"
+                        name="guidelines"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel className="text-xs uppercase tracking-wider text-muted-foreground">
-                                    Membership Rules
+                                    Membership Guidelines
                                 </FormLabel>
                                 <FormControl>
                                     <Textarea
-                                        placeholder="Define membership requirements..."
+                                        placeholder="Be respectful.
+                                        No spam.
+                                        No hate speech.
+                                        Follow Discord etiquette."
                                         className="bg-secondary border-border min-h-[100px]"
                                         {...field}
                                     />

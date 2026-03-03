@@ -36,10 +36,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     useEffect(() => {
         const checkIsConnected = async () => {
-            const isConnected = await signer?.isConnected();
-            if (!isConnected) {
-                router.push("/");
-            }
+            await signer?.isConnected().then((isConnected) => {
+                if (!isConnected) {
+                    router.push("/");
+                }
+            });
+
         }
         checkIsConnected();
     }, [signer, router]);
