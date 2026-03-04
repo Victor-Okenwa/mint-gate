@@ -9,11 +9,11 @@ const supabase = createClient(
 export async function POST(req: Request) {
     try {
         const body = await req.json()
-console.log(body)
+        console.log(body)
         const { data, error } = await supabase
             .from("communities")
             .insert([body])
-            .select()
+            .select();
 
         if (error) {
             return NextResponse.json(
