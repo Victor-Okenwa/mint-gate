@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ccc } from "@ckb-ccc/connector-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +17,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { createCommunityObject } from "@/lib/ckb/community";
+import { ccc } from "@ckb-ccc/connector-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
@@ -30,6 +33,8 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateCommunityPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const router = useRouter();
+    const signer = ccc.useSigner();
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -42,15 +47,57 @@ export default function CreateCommunityPage() {
     });
 
     async function handleSubmit(values: FormValues) {
-        const mintPriceCkb = values.mintPrice === "" ? 0 : Number(values.mintPrice);
-        setIsSubmitting(true);
-        try {
-            // TODO: Implement on-chain deployment
-            console.log("Deploying community:", { ...values, mintPrice: mintPriceCkb });
-            await new Promise((r) => setTimeout(r, 1500)); // placeholder
+        const mintPriceCkb =
+            values.mintPrice === "" ? 0 : Number(values.mintPrice)
 
+        setIsSubmitting(true)
+
+        try {
+            const creatorAddress =
+                await signer?.getRecommendedAddress()
+
+            if (!creatorAddress) {
+                throw new Error("Wallet not connected")
+            }
+
+            const community = createCommunityObject(
+                creatorAddress,
+                values.name,
+                values.description,
+                values.guidelines || "",
+                mintPriceCkb.toString()
+            )
+
+            const response = await fetch("/api/communities", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    id: community.id,
+                    name: community.name,
+                    description: community.description,
+                    guidelines: community.guidelines,
+                    mint_price: community.mintPrice,
+                    creator_address: creatorAddress,
+                    type_script: community.udtTypeScript,
+                }),
+            })
+
+            if (!response.ok) {
+                toast.error("Failed to save community")
+                throw new Error("Failed to save community")
+            }
+
+            const saved = await response.json()
+
+            console.log("Saved:", saved)
+            toast.success("Community saved successfully");
+            router.push("/dashboard/");
+        } catch (err) {
+            console.error(err)
         } finally {
-            setIsSubmitting(false);
+            setIsSubmitting(false)
         }
     }
 
