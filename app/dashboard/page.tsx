@@ -1,9 +1,7 @@
 "use client";
 
 import { mockCommunities, userMemberships } from "@/lib/mock-data";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { CommunityCard, CommunityCardActions, CommunityCardDescription, CommunityCardJoinButton, CommunityCardViewButton, CommunityCardHeader, CommunityCardMemberCount } from "@/components/community-card";
 
 export default function DashboardPage() {
     return (
@@ -13,37 +11,17 @@ export default function DashboardPage() {
                 {userMemberships.length > 0 ? mockCommunities.map((community) => {
                     const isMember = userMemberships.includes(community.id);
                     return (
-                        <div
-                            key={community.id}
-                            className="border border-border p-6 space-y-4 hover:bg-secondary/30 transition-colors"
-                        >
-                            <div className="flex items-start justify-between">
-                                <h3 className="text-base font-semibold">{community.name}</h3>
-                                {isMember && (
-                                    <Badge variant="outline" className="text-xs">Member</Badge>
-                                )}
-                            </div>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                                {community.description}
-                            </p>
-                            <div className="text-xs text-muted-foreground">
-                                {community.memberCount} members
-                            </div>
-                            <div className="flex gap-2 pt-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    asChild
-                                >
-                                    <Link href={`/community/${community.id}`}>
-                                        View
-                                    </Link>
-                                </Button>
+                        <CommunityCard key={community.id}>
+                            <CommunityCardHeader title={community.name} description={community.description} isMember={isMember} />
+                            <CommunityCardDescription description={community.description} />
+                            <CommunityCardMemberCount count={community.memberCount} />
+                            <CommunityCardActions>
+                                <CommunityCardViewButton href={`/community/${community.id}`} />
                                 {!isMember && (
-                                    <Button size="sm">Join</Button>
+                                    <CommunityCardJoinButton />
                                 )}
-                            </div>
-                        </div>
+                            </CommunityCardActions>
+                        </CommunityCard>
                     );
                 }) : <div className="text-center text-muted-foreground">No memberships found</div>}
             </div>
