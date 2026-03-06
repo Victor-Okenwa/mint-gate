@@ -21,6 +21,7 @@ import { createCommunityObject } from "@/lib/ckb/community";
 import { ccc } from "@ckb-ccc/connector-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { generateXudtTransaction } from "@/lib/ckb/xudt";
 
 export const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
@@ -60,40 +61,42 @@ export default function CreateCommunityPage() {
                 throw new Error("Wallet not connected")
             }
 
-            const community = createCommunityObject(
-                creatorAddress,
-                values.name,
-                values.description,
-                values.guidelines || "",
-                mintPriceCkb.toString()
-            )
+            generateXudtTransaction({ creatorAddress, communityId: "1", xudtCodeHash: "0x1a1e4fef34f5982906f745b048fe7b1089647e82346074e0f32c2ece26cf6b1e" })
 
-            const response = await fetch("/api/communities", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    id: community.id,
-                    name: community.name,
-                    description: community.description,
-                    guidelines: community.guidelines,
-                    mint_price: community.mintPrice,
-                    creator_address: creatorAddress,
-                    type_script: community.udtTypeScript,
-                }),
-            })
+            // const community = createCommunityObject(
+            //     creatorAddress,
+            //     values.name,
+            //     values.description,
+            //     values.guidelines || "",
+            //     mintPriceCkb.toString()
+            // )
 
-            if (!response.ok) {
-                toast.error("Failed to save community")
-                throw new Error("Failed to save community")
-            }
+            // const response = await fetch("/api/community/create", {
+            //     method: "POST",
+            //     headers: {
+            //         "Content-Type": "application/json",
+            //     },
+            //     body: JSON.stringify({
+            //         id: community.id,
+            //         name: community.name,
+            //         description: community.description,
+            //         guidelines: community.guidelines,
+            //         mint_price: community.mintPrice,
+            //         creator_address: creatorAddress,
+            //         // type_script: community.udtTypeScript,
+            //     }),
+            // });
 
-            const saved = await response.json()
+            // if (!response.ok) {
+            //     toast.error("Failed to save community")
+            //     throw new Error("Failed to save community")
+            // }
 
-            console.log("Saved:", saved)
-            toast.success("Community saved successfully");
-            router.push("/dashboard/");
+            // const saved = await response.json()
+
+            // console.log("Saved:", saved)
+            // toast.success("Community saved successfully");
+            // router.push("/dashboard/");
         } catch (err) {
             console.error(err)
         } finally {

@@ -2,14 +2,17 @@
   "name": "mint-gate",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/build-all.js",
+    "build:contract": "node scripts/build-contract.js",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy": "node scripts/build-all.js && node scripts/deploy.js"
   },
   "dependencies": {
     "@ckb-ccc/connector-react": "^1.0.0",
+    "@ckb-ccc/core": "^1.12.5",
     "@hookform/resolvers": "^5.2.2",
     "@nervosnetwork/ckb-sdk-utils": "^0.109.5",
     "@noble/hashes": "^2.0.1",
@@ -41,6 +44,7 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.18",
+    "jest": "^30.2.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"

@@ -4,7 +4,7 @@ export interface Community {
     description: string;
     memberCount: number;
     mintPrice: number;
-    rules: string;
+    guidelines: string;
     members: string[];
 }
 
@@ -15,7 +15,7 @@ export const mockCommunities: Community[] = [
         description: "Core developers and contributors building on Nervos CKB.",
         memberCount: 342,
         mintPrice: 100,
-        rules: "Must hold at least 1000 CKB. Active contribution required.",
+        guidelines: "Must hold at least 1000 CKB. Active contribution required.",
         members: [
             "ckb1qyq...a3f2",
             "ckb1qyq...b7d1",

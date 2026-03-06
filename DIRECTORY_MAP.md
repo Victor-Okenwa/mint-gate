@@ -10,6 +10,12 @@ mint-gate/
 │   ├── favicon.ico
 │   ├── fonts/
 │   │   └── SpaceGrotesk-Regular.ttf
+│   ├── api/                          # API route handlers
+│   │   └── community/
+│   │       ├── create/
+│   │       │   └── route.ts          # POST — create a community
+│   │       └── deploy/
+│   │           └── route.ts          # POST — deploy a community contract
 │   ├── community/
 │   │   └── [name]/
 │   │       └── page.tsx              # Dynamic community detail page
@@ -21,6 +27,7 @@ mint-gate/
 │
 ├── components/                       # Shared React components
 │   ├── ConnectWallet.tsx             # Wallet connection UI
+│   ├── community-card.tsx            # Community display card
 │   ├── navigation.tsx                # Navigation bar
 │   ├── providers/
 │   │   ├── app-provider.tsx          # App-level context provider
@@ -53,10 +60,19 @@ mint-gate/
 ├── lib/                              # Core logic & utilities
 │   ├── utils.ts                      # General utility functions
 │   ├── mock-data.ts                  # Mock/seed data for development
-│   └── ckb/                          # CKB blockchain integration
-│       ├── community.ts              # Community cell building & queries
-│       ├── hash.ts                   # Hashing helpers
-│       └── udt.ts                    # User Defined Token logic
+│   ├── ckb/                          # CKB blockchain integration
+│   │   ├── community.ts              # Community cell building & queries
+│   │   ├── hash.ts                   # Hashing helpers
+│   │   ├── udt.ts                    # User Defined Token logic
+│   │   └── xudt.ts                   # Extensible UDT logic
+│   └── superbase/                    # Supabase integration
+│       └── client.ts                 # Supabase client initialisation
+│
+├── scripts/                          # Build & deployment scripts
+│   ├── add-contract.js               # Register a new contract
+│   ├── build-all.js                  # Build all contracts
+│   ├── build-contract.js             # Build a single contract
+│   └── deploy.js                     # Deploy contracts to CKB
 │
 ├── public/                           # Static assets
 │   ├── ccc-logo.svg
@@ -72,10 +88,13 @@ mint-gate/
 ├── utils/                            # Standalone utility modules
 │   └── stringUtils.ts                # String manipulation helpers
 │
-├── temp/                             # Temporary/scratch files
+├── ccc-client.ts                     # CKB CCC client configuration
 │
+├── .env.local                        # Local environment variables
 ├── .eslintrc.json                    # ESLint configuration
 ├── .gitignore
+├── .vscode/
+│   └── settings.json                 # VS Code workspace settings
 ├── components.json                   # shadcn/ui component config
 ├── next.config.mjs                   # Next.js configuration
 ├── next-env.d.ts                     # Next.js TypeScript declarations

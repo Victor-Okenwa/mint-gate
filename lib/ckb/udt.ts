@@ -1,6 +1,5 @@
 import { bytesToHex } from "@noble/hashes/utils.js";
 import { blake160 } from "./hash";
-import { TESTNET_XUDT_CODE_HASH, TESTNET_HASH_TYPE } from "@/contracts/constants";
 
 export function generateCommunityTypeScript(
     creatorAddress: string,
@@ -15,8 +14,8 @@ export function generateCommunityTypeScript(
     const args = blake160(seedHex);
 
     return {
-        codeHash: TESTNET_XUDT_CODE_HASH,
-        hashType: TESTNET_HASH_TYPE,
+        codeHash: process.env.NEXT_PUBLIC_XUDT_CODE_HASH!,
+        hashType: process.env.NEXT_PUBLIC_HASH_TYPE!,
         args
     }
 
