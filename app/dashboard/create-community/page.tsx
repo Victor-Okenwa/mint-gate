@@ -21,7 +21,7 @@ import { createCommunityObject } from "@/lib/ckb/community";
 import { ccc } from "@ckb-ccc/connector-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { generateXudtTransaction } from "@/lib/ckb/xudt";
+import { ckbToShannonsHex, generateXudtTransaction } from "@/lib/ckb/xudt";
 
 export const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
@@ -48,54 +48,77 @@ export default function CreateCommunityPage() {
     });
 
     async function handleSubmit(values: FormValues) {
-        const mintPriceCkb =
-            values.mintPrice === "" ? 0 : Number(values.mintPrice)
-
         setIsSubmitting(true)
-
         try {
             const creatorAddress =
                 await signer?.getRecommendedAddress()
 
             if (!creatorAddress) {
-                throw new Error("Wallet not connected")
+                toast.error("Please connect your wallet to continue")
+                return;
             }
 
-            generateXudtTransaction({ creatorAddress, communityId: "1", xudtCodeHash: "0x1a1e4fef34f5982906f745b048fe7b1089647e82346074e0f32c2ece26cf6b1e" })
+            const res = await fetch("/api/community/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: values.name,
+                    description: values.description,
+                    guidelines: values.guidelines || "",
+                    mint_price: values.mintPrice || "0",
+                    creator_address: creatorAddress,
+                }),
+            });
 
-            // const community = createCommunityObject(
-            //     creatorAddress,
-            //     values.name,
-            //     values.description,
-            //     values.guidelines || "",
-            //     mintPriceCkb.toString()
-            // )
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error("Failed to create community: " + text);
+            }
 
-            // const response = await fetch("/api/community/create", {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //     },
-            //     body: JSON.stringify({
-            //         id: community.id,
-            //         name: community.name,
-            //         description: community.description,
-            //         guidelines: community.guidelines,
-            //         mint_price: community.mintPrice,
-            //         creator_address: creatorAddress,
-            //         // type_script: community.udtTypeScript,
-            //     }),
-            // });
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error("Failed to create community: " + text);
+            }
 
-            // if (!response.ok) {
-            //     toast.error("Failed to save community")
-            //     throw new Error("Failed to save community")
-            // }
+            const body = await res.json();
+            const community = body.community;
+            const typeScript = body.typeScript;
 
-            // const saved = await response.json()
+            console.log(community, typeScript, body);
 
-            // console.log("Saved:", saved)
-            // toast.success("Community saved successfully");
+            const capacityHex = ckbToShannonsHex(150);
+
+            const lock = await signer?.getRecommendedAddressObj().then(obj => obj.script);
+
+            const output = {
+                lock,
+                type: typeScript,
+                capacity: capacityHex,
+                data: "0x",
+            };
+            
+            const unsignedTx = ccc.Transaction.from({ outputs: [output] });
+
+            const signedTx = await signer?.signTransaction(unsignedTx);
+
+            const txHash = await signer?.sendTransaction(signedTx);
+
+            console.log(txHash);
+
+            const response = await fetch("/api/community/deploy", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ communityId: community.id, txHash: txHash }),
+            });
+
+            if (!response.ok) {
+                toast.error("Failed to deploy community");
+                return;
+            }
+
+            const saved = await response.json()
+            console.log(saved)
+            toast.success("Community deployed successfully");
             // router.push("/dashboard/");
         } catch (err) {
             console.error(err)
