@@ -88,7 +88,7 @@ export default function CreateCommunityPage() {
 
             const capacityHex = ckbToShannonsHex(150);
 
-            const lock = await signer?.getRecommendedAddressObj().then(obj => obj.script);
+            const lock = (await signer!.getRecommendedAddressObj()).script;
 
             const output = {
                 lock,
@@ -101,7 +101,7 @@ export default function CreateCommunityPage() {
 
             const signedTx = await signer?.signTransaction(unsignedTx);
 
-            const txHash = await signer?.sendTransaction(signedTx);
+            const txHash = await signer?.signTransaction(signedTx);
 
             console.log(txHash);
 
