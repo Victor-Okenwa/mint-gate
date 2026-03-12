@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { generateCommunityIdAndTypeScript } from "@/lib/ckb/xudt";
-import { supabase } from "@/lib/superbase/client";
+import { supabaseAdmin } from "@/lib/superbase/server";
 
 export async function POST(req: Request) {
     try {
@@ -16,6 +16,8 @@ export async function POST(req: Request) {
 
         // server generates canonical id + typeScript
         const { id, typeScript } = generateCommunityIdAndTypeScript();
+
+        console.log("body", { name, description, guidelines, mint_price, creator_address, id, typeScript });
 
         const guidelinesArray =
             typeof guidelines === "string"
@@ -35,7 +37,9 @@ export async function POST(req: Request) {
             status: "deploying",
         };
 
-        const { data, error } = await supabase
+        console.log("insertRow", insertRow);
+
+        const { data, error } = await supabaseAdmin
             .from("communities")
             .insert([insertRow])
             .select()

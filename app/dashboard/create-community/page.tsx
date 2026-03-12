@@ -17,11 +17,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { createCommunityObject } from "@/lib/ckb/community";
 import { ccc } from "@ckb-ccc/connector-react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { ckbToShannonsHex, generateXudtTransaction } from "@/lib/ckb/xudt";
+import { ckbToShannons, ckbToShannonsHex } from "@/lib/ckb/xudt";
 
 export const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
@@ -34,7 +32,8 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function CreateCommunityPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const router = useRouter();
+    const [isDeploying, setIsDeploying] = useState(false);
+    // const router = useRouter();
     const signer = ccc.useSigner();
 
     const form = useForm<FormValues>({
@@ -48,17 +47,26 @@ export default function CreateCommunityPage() {
     });
 
     async function handleSubmit(values: FormValues) {
-        setIsSubmitting(true)
+        setIsSubmitting(true);
         try {
-            const creatorAddress =
-                await signer?.getRecommendedAddress()
+            const balance = await signer?.getBalance();
 
-            if (!creatorAddress) {
-                toast.error("Please connect your wallet to continue")
+            const creatorAddress =
+                await signer?.getRecommendedAddress();
+
+           if (!balance || !creatorAddress) {
+            toast.error("Please connect your wallet to continue");
+            return;
+           }
+
+            if (balance < ckbToShannons(151)) {
+                toast.error("You need at least 151 CKB to deploy a community");
                 return;
             }
 
-            const res = await fetch("/api/community/create", {
+
+            /*
+            const createCommunityResponse = await fetch("/api/community/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -70,21 +78,16 @@ export default function CreateCommunityPage() {
                 }),
             });
 
-            if (!res.ok) {
-                const text = await res.text();
+            if (!createCommunityResponse.ok) {
+                const text = await createCommunityResponse.text();
                 throw new Error("Failed to create community: " + text);
             }
 
-            if (!res.ok) {
-                const text = await res.text();
-                throw new Error("Failed to create community: " + text);
-            }
-
-            const body = await res.json();
+            const body = await createCommunityResponse.json();
             const community = body.community;
             const typeScript = body.typeScript;
+            setIsDeploying(true);
 
-            console.log(community, typeScript, body);
 
             const capacityHex = ckbToShannonsHex(150);
 
@@ -96,34 +99,47 @@ export default function CreateCommunityPage() {
                 capacity: capacityHex,
                 data: "0x",
             };
-            
+
             const unsignedTx = ccc.Transaction.from({ outputs: [output] });
+
+            await unsignedTx.completeInputsByCapacity(signer!);
+            await unsignedTx.completeFeeBy(signer!);
 
             const signedTx = await signer?.signTransaction(unsignedTx);
 
-            const txHash = await signer?.signTransaction(signedTx);
+            const txHash = await signer?.sendTransaction(signedTx);
 
             console.log(txHash);
 
-            const response = await fetch("/api/community/deploy", {
+            const deployCommunityResponse = await fetch("/api/community/deploy", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ communityId: community.id, txHash: txHash }),
+                body: JSON.stringify({ communityId: community.id }),
             });
 
-            if (!response.ok) {
+            console.log(deployCommunityResponse);
+
+            if (!deployCommunityResponse.ok) {
                 toast.error("Failed to deploy community");
                 return;
             }
 
-            const saved = await response.json()
+            const saved = await deployCommunityResponse.json()
             console.log(saved)
             toast.success("Community deployed successfully");
+            */
             // router.push("/dashboard/");
         } catch (err) {
-            console.error(err)
+            console.error(err);
+            const message = err instanceof Error ? err.message : "Something went wrong";
+            if (message.toLowerCase().includes("capacity") || message.toLowerCase().includes("insufficient")) {
+                toast.error("Insufficient CKB balance. You need at least 150 CKB plus fees.");
+            } else {
+                toast.error(message);
+            }
         } finally {
-            setIsSubmitting(false)
+            setIsSubmitting(false);
+            setIsDeploying(false);
         }
     }
 
@@ -228,7 +244,7 @@ export default function CreateCommunityPage() {
                         {isSubmitting ? (
                             <>
                                 <Spinner className="size-5" />
-                                Deploying…
+                                {isDeploying ? "Deploying…" : "Uploading data…"}
                             </>
                         ) : (
                             "Deploy On-Chain"

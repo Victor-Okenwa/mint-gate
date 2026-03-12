@@ -1,6 +1,16 @@
-import { Address, ccc, } from "@ckb-ccc/connector-react";
+import { Address, ccc, } from "@ckb-ccc/core";
 import { cccClient } from "@/ccc-client";
 import { blake2bHexFromString } from "./hash";
+import { CKB_SHANNON_VALUE, SHANNONS_PER_CKB } from "@/contracts/constants";
+
+/**
+ * Convert CKB to shannons
+ * @param ckb - CKB amount
+ * @returns shannons
+ */
+export function ckbToShannons(ckb: number | string | bigint): bigint {
+    return BigInt(ckb) * BigInt(SHANNONS_PER_CKB);
+}
 
 /**
  * Convert CKB to shannons hex
@@ -8,7 +18,7 @@ import { blake2bHexFromString } from "./hash";
  * @returns shannons hex
  */
 export function ckbToShannonsHex(ckb: number | string): string {
-    const shannonsPerCkb = BigInt("100000000");
+    const shannonsPerCkb = BigInt(SHANNONS_PER_CKB);
     const n = BigInt(Math.floor(Number(ckb))) * shannonsPerCkb;
     // return hex string with 0x prefix
     return "0x" + n.toString(16);
@@ -53,7 +63,7 @@ export async function generateXudtTransaction({ creatorAddress, communityId, xud
     const output = {
         lock,
         type: typeScript,
-        capacity: "0x37e11d600", // 150 ckb (150 * 10^8) shannons
+        capacity: ckbToShannonsHex(CKB_SHANNON_VALUE),
         data: "0x"
     }
 
@@ -64,5 +74,3 @@ export async function generateXudtTransaction({ creatorAddress, communityId, xud
         typeScript,
     };
 }
-
-generateXudtTransaction({ creatorAddress: "ckt1qyqrdsefa43s6m882pcj53m484k24jy84jj64vvxuj9sn", communityId: "1", xudtCodeHash: "0x1a1e4fef34f5982906f745b048fe7b1089647e82346074e0f32c2ece26cf6b1e" });

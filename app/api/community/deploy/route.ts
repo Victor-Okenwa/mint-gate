@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/superbase/client";
+import { supabaseAdmin } from "@/lib/superbase/server";
 import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
@@ -9,7 +9,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "missing fields" }, { status: 400 });
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from("communities")
             .update({
                 deployment_tx_hash: txHash,

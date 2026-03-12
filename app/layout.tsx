@@ -30,7 +30,7 @@ export default function RootLayout({
             <AppProvider>
               {children}
             </AppProvider>
-            <Toaster position="top-right" richColors duration={4000} />
+            <Toaster position="top-right" richColors duration={5000} />
           </ThemeProvider>
         </body>
       </LayoutProvider>

@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build-all.js",
+    "build": "next build",
     "build:contract": "node scripts/build-contract.js",
     "start": "next start",
+    "dev": "next dev",
     "lint": "next lint",
     "deploy": "node scripts/build-all.js && node scripts/deploy.js"
   },
