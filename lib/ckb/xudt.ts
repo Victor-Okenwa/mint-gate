@@ -3,6 +3,10 @@ import { cccClient } from "@/ccc-client";
 import { blake2bHexFromString } from "./hash";
 import { CKB_SHANNON_VALUE, SHANNONS_PER_CKB } from "@/contracts/constants";
 
+export function generateCommunityId(){
+    return crypto.randomUUID();
+}
+
 /**
  * Convert CKB to shannons
  * @param ckb - CKB amount

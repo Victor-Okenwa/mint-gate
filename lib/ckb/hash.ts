@@ -20,3 +20,16 @@ export function blake2bHexFromString(str: string): string {
     const hash = blake2b(encoded, { dkLen: 32 });
     return "0x" + bytesToHex(hash);
 }
+
+export function utf8ToHex(utf8String: string): string {
+    const encoder = new TextEncoder();
+    const uint8Array = encoder.encode(utf8String);
+    return (
+        "0x" +
+        Array.prototype.map
+            .call(uint8Array, (byte: number) => {
+                return ("0" + (byte & 0xff).toString(16)).slice(-2);
+            })
+            .join("")
+    );
+}

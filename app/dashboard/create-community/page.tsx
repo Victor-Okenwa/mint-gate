@@ -17,10 +17,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { ccc, Script } from "@ckb-ccc/connector-react";
+import { ccc } from "@ckb-ccc/connector-react";
 import { toast } from "sonner";
-import { ckbToShannons, ckbToShannonsHex, generateCommunityIdAndTypeScript } from "@/lib/ckb/xudt";
-import { generateCommunityTypeScript } from "@/lib/ckb/udt";
+import { ckbToShannons, ckbToShannonsHex, generateCommunityId } from "@/lib/ckb/xudt";
+import { utf8ToHex } from "@/lib/ckb/hash";
 
 export const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
@@ -48,116 +48,79 @@ export default function CreateCommunityPage() {
     });
 
     async function handleSubmit(values: FormValues) {
-        // setIsSubmitting(true);
-        console.log("values:", values);
+        const communityId = generateCommunityId();
 
+
+        setIsSubmitting(true);
         try {
             if (!signer) {
-                toast.error("Please connect your wallet to continue");
+                toast.error("Connect wallet first");
                 return;
             }
 
+            
             const balance = await signer.getBalance();
-            const creatorAddress = await signer.getRecommendedAddress();
-            if (!balance || !creatorAddress) {
-                toast.error("Please connect your wallet to continue");
+            const creatorAddress = await signer?.getRecommendedAddress();
+            const addressObj = await signer.getRecommendedAddressObj();
+            
+            if (!balance || !addressObj) {
+                toast.error("Wallet not ready");
                 return;
             }
-
+            
             if (balance < ckbToShannons(151)) {
-                toast.error("You need at least 151 CKB to deploy a community");
+                toast.error("Insufficient balance (min 151 CKB)");
                 return;
             }
 
-            setIsDeploying(true);
-
-            // generate id + typeScript locally (you said this is ok)
-            const { id: communityId, typeScript } = generateCommunityIdAndTypeScript();
-
-            // quick validation
-            console.log("typeScript:", typeScript);
-            if (!typeScript?.codeHash || !typeScript.args) {
-                throw new Error("Invalid typeScript generated (missing fields).");
-            }
-            if (!/^0x[0-9a-fA-F]+$/.test(typeScript.codeHash)) {
-                throw new Error("Invalid codeHash format: " + String(typeScript.codeHash));
-            }
-
-            // prepare lock & output
-            const lock = (await signer.getRecommendedAddressObj()).script;
-            const capacityHex = ckbToShannonsHex(145); // or 130/150 per your risk tolerance
-
-            const output = {
-                capacity: capacityHex,
-                lock,
-                type: undefined,
-                data: ccc.hexFrom,
+            
+            const communityData = {
+                id: communityId,
+                name: values.name,
+                description: values.description,
+                creatorAddress
             };
 
-            // IMPORTANT: include xUDT cell dep up front. DO NOT mutate unsignedTx.cellDeps later.
-            // const XUDT_DEPLOY_TX_HASH = "0xREPLACE_WITH_REAL_XUDT_DEPLOY_TX_HASH"; // <-- replace this
-            const xudtCellDep = {
-                outPoint: {
-                    txHash: "0x0fab65924f2784f17f3e7d9e9e8b8a2a77b8e2e39f6d9c3e3b8e9e7e4b4a9c7f",
-                    index: "0x0",
-                },
-                depType: "code",
-            };
+            const dataHex = utf8ToHex(JSON.stringify(communityData));
 
-            console.log("Output:", output);
-            console.log("Cell dep:", xudtCellDep);
+            const capacityHex = ckbToShannonsHex(145);
 
-            // Build transaction **including** cellDeps
+            // ✅ build tx (NO TYPE SCRIPT)
             const unsignedTx = ccc.Transaction.from({
-                outputs: [output],
-                // cellDeps: [xudtCellDep],
+                outputs: [
+                    {
+                        capacity: capacityHex,
+                        lock: addressObj.script,
+                        type: undefined,
+                    },
+                ],
+                outputsData: [dataHex],
             });
 
-            // log the transaction skeleton for debugging
-            console.log("Unsigned tx (before inputs/fee):", unsignedTx);
-
-            // collect inputs & fee
             await unsignedTx.completeInputsByCapacity(signer);
             await unsignedTx.completeFeeBy(signer);
 
-            // log again so you can inspect inputs and cellDeps
-            console.log("Unsigned tx (ready to sign):", unsignedTx);
-            console.log("unsignedTx.cellDeps:", unsignedTx.cellDeps);
-
-            // sign & send
             const signedTx = await signer.signTransaction(unsignedTx);
-            console.log("signedTx:", signedTx);
-
             const txHash = await signer.sendTransaction(signedTx);
-            console.log("Deployment txHash:", txHash);
 
-            // persist community after successful chain broadcast (call your /api/community/deploy)
-            // const saveRes = await fetch("/api/community/deploy", {
-            //     method: "POST",
-            //     headers: { "Content-Type": "application/json" },
-            //     body: JSON.stringify({
-            //         id: communityId,
-            //         name: values.name,
-            //         description: values.description,
-            //         guidelines: values.guidelines || [],
-            //         mint_price: values.mintPrice || "0",
-            //         creator_address: creatorAddress,
-            //         type_script: typeScript,
-            //         deployment_tx_hash: txHash,
-            //     }),
-            // });
+            console.log("Community deployed:", txHash);
 
-            // if (!saveRes.ok) {
-            //     console.warn("Failed to save community after tx:", await saveRes.text());
-            //     toast.error("Deployed but failed to save community metadata.");
-            // } else {
-            //     const saved = await saveRes.json();
-            //     console.log("Saved community:", saved);
-            //     toast.success("Community deployed and saved");
-            // }
-        } catch (error: any) {
+            // ✅ call backend to store metadata
+            await fetch("/api/community/create", {
+                method: "POST",
+                body: JSON.stringify({
+                    id: communityId,
+                    name: values.name,
+                    description: values.description,
+                    creatorAddress: creatorAddress,
+                    txHash,
+                }),
+            });
+
+            toast.success("Community created successfully 🚀");
+        } catch (error: unknown) {
             console.error("handleSubmit error:", error);
-            const msg = error?.message ?? String(error);
+            const msg = (error as Error)?.message ?? String(error);
             if (msg.toLowerCase().includes("capacity") || msg.toLowerCase().includes("insufficient")) {
                 toast.error("Insufficient CKB balance. You need about 145 CKB plus fees.");
             } else {
@@ -165,8 +128,8 @@ export default function CreateCommunityPage() {
                 toast.error(msg);
             }
         } finally {
-            setIsSubmitting(false);
             setIsDeploying(false);
+            setIsSubmitting(false);
         }
     }
 
