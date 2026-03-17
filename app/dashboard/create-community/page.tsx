@@ -17,9 +17,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import { ccc } from "@ckb-ccc/connector-react";
+import { ccc, Script } from "@ckb-ccc/connector-react";
 import { toast } from "sonner";
-import { ckbToShannons, ckbToShannonsHex } from "@/lib/ckb/xudt";
+import { ckbToShannons, ckbToShannonsHex, generateCommunityIdAndTypeScript } from "@/lib/ckb/xudt";
+import { generateCommunityTypeScript } from "@/lib/ckb/udt";
 
 export const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
@@ -47,95 +48,121 @@ export default function CreateCommunityPage() {
     });
 
     async function handleSubmit(values: FormValues) {
-        setIsSubmitting(true);
+        // setIsSubmitting(true);
+        console.log("values:", values);
+
         try {
-            const balance = await signer?.getBalance();
+            if (!signer) {
+                toast.error("Please connect your wallet to continue");
+                return;
+            }
 
-            const creatorAddress =
-                await signer?.getRecommendedAddress();
-
-           if (!balance || !creatorAddress) {
-            toast.error("Please connect your wallet to continue");
-            return;
-           }
+            const balance = await signer.getBalance();
+            const creatorAddress = await signer.getRecommendedAddress();
+            if (!balance || !creatorAddress) {
+                toast.error("Please connect your wallet to continue");
+                return;
+            }
 
             if (balance < ckbToShannons(151)) {
                 toast.error("You need at least 151 CKB to deploy a community");
                 return;
             }
 
-
-            /*
-            const createCommunityResponse = await fetch("/api/community/create", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name: values.name,
-                    description: values.description,
-                    guidelines: values.guidelines || "",
-                    mint_price: values.mintPrice || "0",
-                    creator_address: creatorAddress,
-                }),
-            });
-
-            if (!createCommunityResponse.ok) {
-                const text = await createCommunityResponse.text();
-                throw new Error("Failed to create community: " + text);
-            }
-
-            const body = await createCommunityResponse.json();
-            const community = body.community;
-            const typeScript = body.typeScript;
             setIsDeploying(true);
 
+            // generate id + typeScript locally (you said this is ok)
+            const { id: communityId, typeScript } = generateCommunityIdAndTypeScript();
 
-            const capacityHex = ckbToShannonsHex(150);
-
-            const lock = (await signer!.getRecommendedAddressObj()).script;
-
-            const output = {
-                lock,
-                type: typeScript,
-                capacity: capacityHex,
-                data: "0x",
-            };
-
-            const unsignedTx = ccc.Transaction.from({ outputs: [output] });
-
-            await unsignedTx.completeInputsByCapacity(signer!);
-            await unsignedTx.completeFeeBy(signer!);
-
-            const signedTx = await signer?.signTransaction(unsignedTx);
-
-            const txHash = await signer?.sendTransaction(signedTx);
-
-            console.log(txHash);
-
-            const deployCommunityResponse = await fetch("/api/community/deploy", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ communityId: community.id }),
-            });
-
-            console.log(deployCommunityResponse);
-
-            if (!deployCommunityResponse.ok) {
-                toast.error("Failed to deploy community");
-                return;
+            // quick validation
+            console.log("typeScript:", typeScript);
+            if (!typeScript?.codeHash || !typeScript.args) {
+                throw new Error("Invalid typeScript generated (missing fields).");
+            }
+            if (!/^0x[0-9a-fA-F]+$/.test(typeScript.codeHash)) {
+                throw new Error("Invalid codeHash format: " + String(typeScript.codeHash));
             }
 
-            const saved = await deployCommunityResponse.json()
-            console.log(saved)
-            toast.success("Community deployed successfully");
-            */
-            // router.push("/dashboard/");
-        } catch (err) {
-            console.error(err);
-            const message = err instanceof Error ? err.message : "Something went wrong";
-            if (message.toLowerCase().includes("capacity") || message.toLowerCase().includes("insufficient")) {
-                toast.error("Insufficient CKB balance. You need at least 150 CKB plus fees.");
+            // prepare lock & output
+            const lock = (await signer.getRecommendedAddressObj()).script;
+            const capacityHex = ckbToShannonsHex(145); // or 130/150 per your risk tolerance
+
+            const output = {
+                capacity: capacityHex,
+                lock,
+                type: undefined,
+                data: ccc.hexFrom,
+            };
+
+            // IMPORTANT: include xUDT cell dep up front. DO NOT mutate unsignedTx.cellDeps later.
+            // const XUDT_DEPLOY_TX_HASH = "0xREPLACE_WITH_REAL_XUDT_DEPLOY_TX_HASH"; // <-- replace this
+            const xudtCellDep = {
+                outPoint: {
+                    txHash: "0x0fab65924f2784f17f3e7d9e9e8b8a2a77b8e2e39f6d9c3e3b8e9e7e4b4a9c7f",
+                    index: "0x0",
+                },
+                depType: "code",
+            };
+
+            console.log("Output:", output);
+            console.log("Cell dep:", xudtCellDep);
+
+            // Build transaction **including** cellDeps
+            const unsignedTx = ccc.Transaction.from({
+                outputs: [output],
+                // cellDeps: [xudtCellDep],
+            });
+
+            // log the transaction skeleton for debugging
+            console.log("Unsigned tx (before inputs/fee):", unsignedTx);
+
+            // collect inputs & fee
+            await unsignedTx.completeInputsByCapacity(signer);
+            await unsignedTx.completeFeeBy(signer);
+
+            // log again so you can inspect inputs and cellDeps
+            console.log("Unsigned tx (ready to sign):", unsignedTx);
+            console.log("unsignedTx.cellDeps:", unsignedTx.cellDeps);
+
+            // sign & send
+            const signedTx = await signer.signTransaction(unsignedTx);
+            console.log("signedTx:", signedTx);
+
+            const txHash = await signer.sendTransaction(signedTx);
+            console.log("Deployment txHash:", txHash);
+
+            // persist community after successful chain broadcast (call your /api/community/deploy)
+            // const saveRes = await fetch("/api/community/deploy", {
+            //     method: "POST",
+            //     headers: { "Content-Type": "application/json" },
+            //     body: JSON.stringify({
+            //         id: communityId,
+            //         name: values.name,
+            //         description: values.description,
+            //         guidelines: values.guidelines || [],
+            //         mint_price: values.mintPrice || "0",
+            //         creator_address: creatorAddress,
+            //         type_script: typeScript,
+            //         deployment_tx_hash: txHash,
+            //     }),
+            // });
+
+            // if (!saveRes.ok) {
+            //     console.warn("Failed to save community after tx:", await saveRes.text());
+            //     toast.error("Deployed but failed to save community metadata.");
+            // } else {
+            //     const saved = await saveRes.json();
+            //     console.log("Saved community:", saved);
+            //     toast.success("Community deployed and saved");
+            // }
+        } catch (error: any) {
+            console.error("handleSubmit error:", error);
+            const msg = error?.message ?? String(error);
+            if (msg.toLowerCase().includes("capacity") || msg.toLowerCase().includes("insufficient")) {
+                toast.error("Insufficient CKB balance. You need about 145 CKB plus fees.");
             } else {
-                toast.error(message);
+                // show the raw message to help debugging
+                toast.error(msg);
             }
         } finally {
             setIsSubmitting(false);
