@@ -21,6 +21,7 @@ import { ccc } from "@ckb-ccc/connector-react";
 import { toast } from "sonner";
 import { ckbToShannons, ckbToShannonsHex, generateCommunityId } from "@/lib/ckb/xudt";
 import { utf8ToHex } from "@/lib/ckb/hash";
+import { InfoIcon } from "lucide-react";
 
 export const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
@@ -58,22 +59,22 @@ export default function CreateCommunityPage() {
                 return;
             }
 
-            
+
             const balance = await signer.getBalance();
             const creatorAddress = await signer?.getRecommendedAddress();
             const addressObj = await signer.getRecommendedAddressObj();
-            
+
             if (!balance || !addressObj) {
                 toast.error("Wallet not ready");
                 return;
             }
-            
-            if (balance < ckbToShannons(151)) {
-                toast.error("Insufficient balance (min 151 CKB)");
+
+            if (balance < ckbToShannons(146)) {
+                toast.error("Insufficient balance (min 146 CKB)");
                 return;
             }
 
-            
+
             const communityData = {
                 id: communityId,
                 name: values.name,
@@ -104,6 +105,9 @@ export default function CreateCommunityPage() {
             const txHash = await signer.sendTransaction(signedTx);
 
             console.log("Community deployed:", txHash);
+
+            setIsDeploying(true);
+
 
             // ✅ call backend to store metadata
             await fetch("/api/community/create", {
@@ -139,7 +143,7 @@ export default function CreateCommunityPage() {
             <p className="text-sm text-muted-foreground mb-10">Deploy a new on-chain membership community.</p>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" method="post">
                     <FormField
                         control={form.control}
                         name="name"
@@ -225,6 +229,8 @@ export default function CreateCommunityPage() {
                         )}
                     />
 
+                    <div className="text-xs text-muted-foreground flex items-center gap-2 mt-4"> <InfoIcon className="size-4" /> Deloying a community will cost you 145 CKB plus fees.</div>
+
                     <Button
                         type="submit"
                         size="lg"
@@ -234,7 +240,7 @@ export default function CreateCommunityPage() {
                         {isSubmitting ? (
                             <>
                                 <Spinner className="size-5" />
-                                {isDeploying ? "Deploying…" : "Uploading data…"}
+                                {isDeploying ? "Deploying…" : "Signing Transaction…"}
                             </>
                         ) : (
                             "Deploy On-Chain"
