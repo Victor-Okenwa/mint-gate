@@ -12,12 +12,13 @@ export async function POST(req: Request) {
             guidelines, // frontend should pass an array or newline string
             mint_price,
             creator_address,
+            tx_hash,
         } = body;
 
         // server generates canonical id + typeScript
         const { id, typeScript } = generateCommunityIdAndTypeScript();
 
-        console.log("body", { name, description, guidelines, mint_price, creator_address, id, typeScript });
+        // console.log("body", { name, description, guidelines, mint_price, creator_address, id, typeScript, txHash });
 
         const guidelinesArray =
             typeof guidelines === "string"
@@ -33,8 +34,7 @@ export async function POST(req: Request) {
             guidelines: guidelinesArray,
             mint_price: Number(mint_price ?? 0),
             creator_address,
-            type_script: typeScript,
-            status: "deploying",
+            tx_hash,
         };
 
         console.log("insertRow", insertRow);
@@ -47,16 +47,14 @@ export async function POST(req: Request) {
 
         if (error) {
             console.error("Supabase insert error:", error);
-            return NextResponse.json({ error: error.message }, { status: 500 });
+            return NextResponse.json({ error: (error as Error).message ?? "Server error" }, { status: 500 });
         }
 
-        // return the created row AND the typeScript so frontend can build tx
         return NextResponse.json({
             community: data,
-            typeScript,
         });
     } catch (err) {
         console.error("Create route error:", err);
-        return NextResponse.json({ error: "server error" }, { status: 500 });
+        return NextResponse.json({ error: (err as Error).message ?? "Server call failed" }, { status: 500 });
     }
 }

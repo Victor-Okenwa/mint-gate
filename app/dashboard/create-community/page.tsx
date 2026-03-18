@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { ckbToShannons, ckbToShannonsHex, generateCommunityId } from "@/lib/ckb/xudt";
 import { utf8ToHex } from "@/lib/ckb/hash";
 import { InfoIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
@@ -35,7 +36,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function CreateCommunityPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeploying, setIsDeploying] = useState(false);
-    // const router = useRouter();
+    const router = useRouter();
     const signer = ccc.useSigner();
 
     const form = useForm<FormValues>({
@@ -49,10 +50,9 @@ export default function CreateCommunityPage() {
     });
 
     async function handleSubmit(values: FormValues) {
+        setIsSubmitting(true);
         const communityId = generateCommunityId();
 
-
-        setIsSubmitting(true);
         try {
             if (!signer) {
                 toast.error("Connect wallet first");
@@ -69,24 +69,23 @@ export default function CreateCommunityPage() {
                 return;
             }
 
-            if (balance < ckbToShannons(146)) {
-                toast.error("Insufficient balance (min 146 CKB)");
+            if (balance < ckbToShannons(301)) {
+                toast.error("Insufficient balance (min 301 CKB)");
                 return;
             }
 
 
             const communityData = {
                 id: communityId,
-                name: values.name,
-                description: values.description,
+                // name: values.name,
+                // description: values.description,
                 creatorAddress
             };
 
             const dataHex = utf8ToHex(JSON.stringify(communityData));
 
-            const capacityHex = ckbToShannonsHex(145);
+            const capacityHex = ckbToShannonsHex(301);
 
-            // ✅ build tx (NO TYPE SCRIPT)
             const unsignedTx = ccc.Transaction.from({
                 outputs: [
                     {
@@ -99,7 +98,7 @@ export default function CreateCommunityPage() {
             });
 
             await unsignedTx.completeInputsByCapacity(signer);
-            await unsignedTx.completeFeeBy(signer);
+            await unsignedTx.completeFeeBy(signer, 1000);
 
             const signedTx = await signer.signTransaction(unsignedTx);
             const txHash = await signer.sendTransaction(signedTx);
@@ -109,24 +108,30 @@ export default function CreateCommunityPage() {
             setIsDeploying(true);
 
 
-            // ✅ call backend to store metadata
-            await fetch("/api/community/create", {
+            const response = await fetch("/api/community/create", {
                 method: "POST",
                 body: JSON.stringify({
                     id: communityId,
                     name: values.name,
                     description: values.description,
-                    creatorAddress: creatorAddress,
-                    txHash,
+                    creator_address: creatorAddress,
+                    guidelines: values.guidelines,
+                    mint_price: values.mintPrice,
+                    tx_hash: txHash,
                 }),
             });
 
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
             toast.success("Community created successfully 🚀");
+            router.push(`/dashboard/community/${communityId}`);
         } catch (error: unknown) {
             console.error("handleSubmit error:", error);
             const msg = (error as Error)?.message ?? String(error);
             if (msg.toLowerCase().includes("capacity") || msg.toLowerCase().includes("insufficient")) {
-                toast.error("Insufficient CKB balance. You need about 145 CKB plus fees.");
+                toast.error("Insufficient CKB balance. You need about 301 CKB plus fees.");
             } else {
                 // show the raw message to help debugging
                 toast.error(msg);
