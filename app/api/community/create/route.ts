@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server"
-import { generateCommunityIdAndTypeScript } from "@/lib/ckb/xudt";
 import { supabaseAdmin } from "@/lib/superbase/server";
 
 export async function POST(req: Request) {
@@ -7,6 +6,7 @@ export async function POST(req: Request) {
         const body = await req.json();
 
         const {
+            id,
             name,
             description,
             guidelines, // frontend should pass an array or newline string
@@ -14,9 +14,6 @@ export async function POST(req: Request) {
             creator_address,
             tx_hash,
         } = body;
-
-        // server generates canonical id + typeScript
-        const { id, typeScript } = generateCommunityIdAndTypeScript();
 
         // console.log("body", { name, description, guidelines, mint_price, creator_address, id, typeScript, txHash });
 

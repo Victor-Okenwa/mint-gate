@@ -23,11 +23,27 @@ import { ckbToShannons, ckbToShannonsHex, generateCommunityId } from "@/lib/ckb/
 import { utf8ToHex } from "@/lib/ckb/hash";
 import { InfoIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+const WEBSITE_DOMAIN_REGEX = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/;
+const WWW_PREFIX_REGEX = /^www\./i;
+const WEBSITE_PREFIX = "https://";
 
 export const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
     description: z.string().min(1, "Description is required"),
     guidelines: z.string().optional(),
+    hiddenLink: z
+        .string()
+        .max(100)
+        .refine((val) => !val.trim() || WEBSITE_DOMAIN_REGEX.test(val.trim()), {
+            message: "Enter a valid domain (e.g. example.com)",
+        })
+        .transform((val) => {
+            const trimmed = val.trim().replace(WWW_PREFIX_REGEX, "");
+            return trimmed ? `${WEBSITE_PREFIX}${trimmed}` : "";
+        }),
     mintPrice: z.string(),
 });
 
@@ -77,8 +93,6 @@ export default function CreateCommunityPage() {
 
             const communityData = {
                 id: communityId,
-                // name: values.name,
-                // description: values.description,
                 creatorAddress
             };
 
@@ -116,6 +130,7 @@ export default function CreateCommunityPage() {
                     description: values.description,
                     creator_address: creatorAddress,
                     guidelines: values.guidelines,
+                    hidden_link: values.hiddenLink,
                     mint_price: values.mintPrice,
                     tx_hash: txHash,
                 }),
@@ -207,6 +222,38 @@ export default function CreateCommunityPage() {
                                         {...field}
                                     />
                                 </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="hiddenLink"
+                        render={({ field }) => (
+                            <FormItem>
+                                <div className="flex items-center gap-2">
+                                    <FormLabel>Hidden Link</FormLabel>
+
+                                    <Tooltip>
+                                        <TooltipTrigger><InfoIcon className="size-4" /></TooltipTrigger>
+                                        <TooltipContent className="max-w-md text-sm">
+                                            This is the sensitive link that is not visible to the public. <br />
+                                            It can only be accessed by community members. <br />
+                                            It can be a link to a private channel or a private group on Discord, Telegram, etc.
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <FormControl>
+                                        <InputGroup>
+                                            <InputGroupAddon>
+                                                https://
+                                            </InputGroupAddon>
+                                            <InputGroupInput placeholder="example.com" className="bg-secondary! border-border" {...field} />
+                                        </InputGroup>
+                                    </FormControl>
+                                </div>
                                 <FormMessage />
                             </FormItem>
                         )}
