@@ -1,6 +1,19 @@
 import { NextResponse } from "next/server"
 import { supabaseAdmin } from "@/lib/superbase/server";
 
+function isValidHiddenLink(url: unknown): boolean {
+    if (url == null || url === "") return true;
+    if (typeof url !== "string") return false;
+    const trimmed = url.trim();
+    if (!trimmed) return true;
+    try {
+        const u = new URL(trimmed);
+        return u.protocol === "https:" && Boolean(u.hostname);
+    } catch {
+        return false;
+    }
+}
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -11,6 +24,7 @@ export async function POST(req: Request) {
             description,
             guidelines, // frontend should pass an array or newline string
             mint_price,
+            hidden_link,
             creator_address,
             tx_hash,
         } = body;
@@ -24,12 +38,17 @@ export async function POST(req: Request) {
                     ? guidelines
                     : [];
 
+        if (!isValidHiddenLink(hidden_link)) {
+            return NextResponse.json({ error: "Invalid hidden link URL" }, { status: 400 });
+        }
+
         const insertRow = {
             id,
             name,
             description,
             guidelines: guidelinesArray,
             mint_price: Number(mint_price ?? 0),
+            hidden_link,
             creator_address,
             tx_hash,
         };

@@ -26,9 +26,25 @@ import { useRouter } from "next/navigation";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const WEBSITE_DOMAIN_REGEX = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/;
 const WWW_PREFIX_REGEX = /^www\./i;
 const WEBSITE_PREFIX = "https://";
+
+/** Accepts host, host/path, query, etc. (what users type after the https:// prefix). */
+function isValidHiddenLinkInput(val: string): boolean {
+    const trimmed = val.trim();
+    if (!trimmed) return true;
+    let toParse = trimmed.replace(WWW_PREFIX_REGEX, "");
+    if (!/^https?:\/\//i.test(toParse)) {
+        toParse = `${WEBSITE_PREFIX}${toParse}`;
+    }
+    try {
+        const u = new URL(toParse);
+        if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+        return Boolean(u.hostname);
+    } catch {
+        return false;
+    }
+}
 
 export const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
@@ -37,8 +53,8 @@ export const formSchema = z.object({
     hiddenLink: z
         .string()
         .max(100)
-        .refine((val) => !val.trim() || WEBSITE_DOMAIN_REGEX.test(val.trim()), {
-            message: "Enter a valid domain (e.g. example.com)",
+        .refine((val) => isValidHiddenLinkInput(val), {
+            message: "Enter a valid URL (e.g. example.com or example.com/path)",
         })
         .transform((val) => {
             const trimmed = val.trim().replace(WWW_PREFIX_REGEX, "");
@@ -250,7 +266,7 @@ export default function CreateCommunityPage() {
                                             <InputGroupAddon>
                                                 https://
                                             </InputGroupAddon>
-                                            <InputGroupInput placeholder="example.com" className="bg-secondary! border-border" {...field} />
+                                            <InputGroupInput placeholder="example.com or example.com/path" className="bg-secondary! border-border" {...field} />
                                         </InputGroup>
                                     </FormControl>
                                 </div>
