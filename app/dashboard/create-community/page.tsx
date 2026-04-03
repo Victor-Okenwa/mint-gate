@@ -25,26 +25,9 @@ import { InfoIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { isValidHiddenLinkRawInput } from "@/lib/hidden-link";
 
-const WWW_PREFIX_REGEX = /^www\./i;
 const WEBSITE_PREFIX = "https://";
-
-/** Accepts host, host/path, query, etc. (what users type after the https:// prefix). */
-function isValidHiddenLinkInput(val: string): boolean {
-    const trimmed = val.trim();
-    if (!trimmed) return true;
-    let toParse = trimmed.replace(WWW_PREFIX_REGEX, "");
-    if (!/^https?:\/\//i.test(toParse)) {
-        toParse = `${WEBSITE_PREFIX}${toParse}`;
-    }
-    try {
-        const u = new URL(toParse);
-        if (u.protocol !== "http:" && u.protocol !== "https:") return false;
-        return Boolean(u.hostname);
-    } catch {
-        return false;
-    }
-}
 
 export const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
@@ -53,11 +36,12 @@ export const formSchema = z.object({
     hiddenLink: z
         .string()
         .max(100)
-        .refine((val) => isValidHiddenLinkInput(val), {
-            message: "Enter a valid URL (e.g. example.com or example.com/path)",
+        .refine((val) => isValidHiddenLinkRawInput(val), {
+            message:
+                "Omit https:// — use a host like example.com or www.example.com.lk, optional /path/segments (letters, digits, ._~-)",
         })
         .transform((val) => {
-            const trimmed = val.trim().replace(WWW_PREFIX_REGEX, "");
+            const trimmed = val.trim();
             return trimmed ? `${WEBSITE_PREFIX}${trimmed}` : "";
         }),
     mintPrice: z.string(),
@@ -266,7 +250,7 @@ export default function CreateCommunityPage() {
                                             <InputGroupAddon>
                                                 https://
                                             </InputGroupAddon>
-                                            <InputGroupInput placeholder="example.com or example.com/path" className="bg-secondary! border-border" {...field} />
+                                            <InputGroupInput placeholder="example.com, www.example.com/path" className="bg-secondary! border-border" {...field} />
                                         </InputGroup>
                                     </FormControl>
                                 </div>

@@ -1,18 +1,6 @@
 import { NextResponse } from "next/server"
+import { isValidStoredHiddenLink } from "@/lib/hidden-link";
 import { supabaseAdmin } from "@/lib/superbase/server";
-
-function isValidHiddenLink(url: unknown): boolean {
-    if (url == null || url === "") return true;
-    if (typeof url !== "string") return false;
-    const trimmed = url.trim();
-    if (!trimmed) return true;
-    try {
-        const u = new URL(trimmed);
-        return u.protocol === "https:" && Boolean(u.hostname);
-    } catch {
-        return false;
-    }
-}
 
 export async function POST(req: Request) {
     try {
@@ -38,7 +26,10 @@ export async function POST(req: Request) {
                     ? guidelines
                     : [];
 
-        if (!isValidHiddenLink(hidden_link)) {
+        if (hidden_link != null && typeof hidden_link !== "string") {
+            return NextResponse.json({ error: "Invalid hidden link URL" }, { status: 400 });
+        }
+        if (typeof hidden_link === "string" && !isValidStoredHiddenLink(hidden_link)) {
             return NextResponse.json({ error: "Invalid hidden link URL" }, { status: 400 });
         }
 
