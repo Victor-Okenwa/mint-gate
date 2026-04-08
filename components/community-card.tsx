@@ -48,6 +48,14 @@ export function CommunityCardMemberCount({ className, count, ...props }: { class
     )
 }
 
+export function CommunityCardMintPrice({ className, price, ...props }: { className?: ClassValue, price: number } & HTMLAttributes<HTMLDivElement>) {
+    return (
+        <span className={cn("text-xs text-muted-foreground", className)} {...props}>
+            {price} CKB
+        </span>
+    )
+}
+
 export function CommunityCardViewButton({ className, href, ...props }: { className?: ClassValue, href: string } & HTMLAttributes<HTMLButtonElement>) {
     return (
         <Button variant="outline" size="sm" className={cn(className)} asChild {...props}>

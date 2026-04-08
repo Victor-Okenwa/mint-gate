@@ -3,16 +3,13 @@
 import ConnectWallet from "@/components/ConnectWallet";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Navigation } from "@/components/navigation";
 import { useApp } from "@/components/providers/app-provider";
 
 export default function Home() {
   const { isConnected } = useApp();
 
   return (
-    <main className="min-h-screen">
-      <Navigation />
-
+    <div>
       {/* Hero */}
       <section className="flex flex-col items-center justify-center px-6 py-32 text-center">
         <h1 className="text-5xl font-bold tracking-tight leading-tight max-w-2xl md:text-6xl">
@@ -29,7 +26,7 @@ export default function Home() {
           ) : (
             <ConnectWallet />
           )}
-          <Link href="/dashboard">
+          <Link href="/communities">
             <Button variant="outline" size="lg">Explore Communities</Button>
           </Link>
         </div>
@@ -80,6 +77,6 @@ export default function Home() {
         </div>
       </footer>
 
-    </main>
+    </div>
   );
 }

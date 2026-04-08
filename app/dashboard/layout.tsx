@@ -24,7 +24,7 @@ import ConnectWallet from "@/components/ConnectWallet";
 
 const sidebarItems = [
     { title: "My Memberships", url: "/dashboard" },
-    { title: "Discover Communities", url: "/dashboard" },
+    { title: "Discover Communities", url: "/communities" },
     { title: "Create Community", url: "/dashboard/create-community" },
     { title: "Settings", url: "/dashboard" },
 ];
@@ -74,7 +74,7 @@ function AppSidebar() {
     return (
         <Sidebar className="border-r border-border overflow-hidden" collapsible="icon">
             <div className="px-4 py-5 border-b border-border">
-                <Link href="/dashboard" className={cn("text-sm font-semibold tracking-widest uppercase", {
+                <Link href="/" className={cn("text-sm font-semibold tracking-widest uppercase", {
                     "truncate-text text-[9px]": !open,
                 })}>Mint Gate</Link>
             </div>

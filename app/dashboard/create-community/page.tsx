@@ -281,7 +281,7 @@ export default function CreateCommunityPage() {
                         )}
                     />
 
-                    <div className="text-xs text-muted-foreground flex items-center gap-2 mt-4"> <InfoIcon className="size-4" /> Deloying a community will cost you 145 CKB plus fees.</div>
+                    <div className="text-xs text-muted-foreground flex items-center gap-2 mt-4"> <InfoIcon className="size-4" /> Deloying a community will cost you 301 CKB plus fees.</div>
 
                     <Button
                         type="submit"
