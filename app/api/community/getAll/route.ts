@@ -37,14 +37,14 @@ export async function GET(req: Request) {
 
     if (ids.length > 0) {
         const [allMembersResult, userMembershipResult] = await Promise.all([
-            supabaseAdmin.from("members").select("communityid").in("communityid", ids),
+            supabaseAdmin.from("members").select("community_id").in("community_id", ids),
             userAddress
                 ? supabaseAdmin
                       .from("members")
-                      .select("communityid")
+                      .select("community_id")
                       .eq("user_address", userAddress)
-                      .in("communityid", ids)
-                : Promise.resolve({ data: null as { communityid: string }[] | null, error: null }),
+                      .in("community_id", ids)
+                : Promise.resolve({ data: null as { community_id: string }[] | null, error: null }),
         ]);
 
         if (allMembersResult.error) {
@@ -53,7 +53,7 @@ export async function GET(req: Request) {
         }
 
         for (const m of allMembersResult.data ?? []) {
-            const cid = String(m.communityid);
+            const cid = String(m.community_id);
             membersCountByCommunity.set(cid, (membersCountByCommunity.get(cid) ?? 0) + 1);
         }
 
@@ -63,7 +63,7 @@ export async function GET(req: Request) {
                 return NextResponse.json({ error: userMembershipResult.error.message }, { status: 500 });
             }
             for (const m of userMembershipResult.data ?? []) {
-                membershipIds.add(String(m.communityid));
+                membershipIds.add(String(m.community_id));
             }
         }
     }
