@@ -12,7 +12,7 @@ import {
     CommunityCardViewButton,
 } from "@/components/community-card";
 import { Button } from "@/components/ui/button";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { Spinner } from "@/components/ui/spinner";
 import { ccc } from "@ckb-ccc/connector-react";
 import { SearchIcon } from "lucide-react";
@@ -156,7 +156,7 @@ export default function CommunitiesPage() {
     return (
         <div className="px-4 pb-16 md:px-8">
             <div className="flex justify-center items-center sticky top-16 z-10 py-4">
-                <fieldset className="w-full max-w-md bg-background rounded-full p-2 border border-border shadow-sm">
+                <fieldset className="w-full max-w-md bg-background rounded-full p-2 border border-border shadow-sm flex">
                     <InputGroup>
                         <InputGroupInput
                             placeholder="Search communities…"
@@ -164,11 +164,16 @@ export default function CommunitiesPage() {
                             onChange={(e) => setSearch(e.target.value)}
                             aria-label="Search communities"
                             className="rounded-full!"
+                            name="search"
                         />
-                        <InputGroupAddon>
+                        {/* <InputGroupAddon>
                             <SearchIcon className="size-4 text-muted-foreground" />
-                        </InputGroupAddon>
+                        </InputGroupAddon> */}
                     </InputGroup>
+
+                    <Button className="rounded-s-none rounded-e-full">
+                        <SearchIcon />
+                    </Button>
                 </fieldset>
             </div>
 
@@ -233,7 +238,7 @@ export default function CommunitiesPage() {
                                             <CommunityCardViewButton
                                                 href={`/community/${community.communityID}`}
                                             />
-                                            {!community.isMember && <CommunityCardJoinButton />}
+                                            {!community.isMember && <CommunityCardJoinButton mintPrice={community.mintPrice} creatorAddress={community.creatorAddress} />}
                                         </CommunityCardActions>
                                     </CommunityCard>
                                 ))}

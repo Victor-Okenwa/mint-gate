@@ -1,10 +1,11 @@
 
 import { cn } from "@/lib/utils"
 import { ClassValue } from "class-variance-authority/types"
-import type { HTMLAttributes, ReactNode } from "react"
+import { useCallback, useState, type HTMLAttributes, type ReactNode } from "react"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import Link from "next/link"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog"
 
 export function CommunityCard({
     children,
@@ -64,11 +65,35 @@ export function CommunityCardViewButton({ className, href, ...props }: { classNa
     )
 }
 
-export function CommunityCardJoinButton({ className, ...props }: { className?: ClassValue } & HTMLAttributes<HTMLButtonElement>) {
+export function CommunityCardJoinButton({ className, mintPrice, creatorAddress, ...props }: { className?: ClassValue, mintPrice: number, creatorAddress: string } & HTMLAttributes<HTMLButtonElement>) {
+    const [isOpen, setIsOpen] = useState(false);
+
+    
+
+    const handleJoin = useCallback(() => {
+        console.log("join");
+    }, []);
+
     return (
-        <Button variant="default" size="sm" className={cn(className)} {...props}>
-            Join
-        </Button>
+        <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+            <AlertDialogTrigger asChild>
+                <Button variant="default" size="sm" className={cn(className)} {...props}>
+                    Join
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Join the community</AlertDialogTitle>
+                </AlertDialogHeader>
+                <AlertDialogDescription>
+                    Joining this community will cost you {mintPrice} CKB.
+                </AlertDialogDescription>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction>Join</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     )
 }
 

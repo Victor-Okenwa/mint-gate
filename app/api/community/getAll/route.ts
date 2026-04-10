@@ -6,6 +6,7 @@ export type CommunityListItem = {
     name: string;
     description: string;
     mintPrice: number;
+    creatorAddress: string;
     isMember: boolean;
     membersCount: number;
 };
@@ -21,7 +22,7 @@ export async function GET(req: Request) {
 
     const { data: rows, error: communitiesError } = await supabaseAdmin
         .from("communities")
-        .select("id, name, description, mint_price")
+        .select("id, name, description, mint_price, creator_address")
         .range(from, to);
 
     if (communitiesError) {
@@ -40,10 +41,10 @@ export async function GET(req: Request) {
             supabaseAdmin.from("members").select("community_id").in("community_id", ids),
             userAddress
                 ? supabaseAdmin
-                      .from("members")
-                      .select("community_id")
-                      .eq("user_address", userAddress)
-                      .in("community_id", ids)
+                    .from("members")
+                    .select("community_id")
+                    .eq("user_address", userAddress)
+                    .in("community_id", ids)
                 : Promise.resolve({ data: null as { community_id: string }[] | null, error: null }),
         ]);
 
@@ -75,6 +76,7 @@ export async function GET(req: Request) {
             name: row.name ?? "",
             description: row.description ?? "",
             mintPrice: Number(row.mint_price ?? 0),
+            creatorAddress: row.creator_address ?? "",
             isMember: userAddress ? membershipIds.has(id) : false,
             membersCount: membersCountByCommunity.get(id) ?? 0,
         };
