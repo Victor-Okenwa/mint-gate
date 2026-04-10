@@ -6,6 +6,8 @@ import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import Link from "next/link"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog"
+import { ccc } from "@ckb-ccc/connector-react"
+import { toast } from "sonner"
 
 export function CommunityCard({
     children,
@@ -68,11 +70,27 @@ export function CommunityCardViewButton({ className, href, ...props }: { classNa
 export function CommunityCardJoinButton({ className, mintPrice, creatorAddress, ...props }: { className?: ClassValue, mintPrice: number, creatorAddress: string } & HTMLAttributes<HTMLButtonElement>) {
     const [isOpen, setIsOpen] = useState(false);
 
-    
+    const cccClient = ccc.useCcc();
 
-    const handleJoin = useCallback(() => {
-        console.log("join");
-    }, []);
+    const handleJoin = useCallback(async () => {
+        const { script: toLock } = await ccc.Address.fromString(creatorAddress, cccClient.client);
+
+        const tx = ccc.Transaction.from({
+            outputs: [{ lock: toLock }],
+            outputsData: [],
+        });
+
+        tx.outputs.forEach((output, i) => {
+            if (output.capacity > ccc.fixedPointFrom(mintPrice)) {
+                toast.error(`Insufficient balance: ${output.capacity} < ${mintPrice} CKB at ${i}`);
+                return;
+            }
+
+            output.capacity = ccc.fixedPointFrom(mintPrice);
+        });
+
+        console.log(tx)
+    }, [cccClient, mintPrice, creatorAddress]);
 
     return (
         <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
@@ -90,7 +108,7 @@ export function CommunityCardJoinButton({ className, mintPrice, creatorAddress, 
                 </AlertDialogDescription>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction>Join</AlertDialogAction>
+                    <AlertDialogAction onClick={handleJoin}>Join</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
