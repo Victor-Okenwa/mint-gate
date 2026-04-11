@@ -75,7 +75,6 @@ export default function CreateCommunityPage() {
                 return;
             }
 
-
             const balance = await signer.getBalance();
             const creatorAddress = await signer?.getRecommendedAddress();
             const addressObj = await signer.getRecommendedAddressObj();

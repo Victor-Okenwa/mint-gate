@@ -12,7 +12,7 @@ import {
     CommunityCardViewButton,
 } from "@/components/community-card";
 import { Button } from "@/components/ui/button";
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Spinner } from "@/components/ui/spinner";
 import { ccc } from "@ckb-ccc/connector-react";
 import { SearchIcon } from "lucide-react";
@@ -238,7 +238,7 @@ export default function CommunitiesPage() {
                                             <CommunityCardViewButton
                                                 href={`/community/${community.communityID}`}
                                             />
-                                            {!community.isMember && <CommunityCardJoinButton mintPrice={community.mintPrice} creatorAddress={community.creatorAddress} />}
+                                            {!community.isMember && <CommunityCardJoinButton mintPrice={community.mintPrice} creatorAddress={community.creatorAddress} communityId={community.communityID} />}
                                         </CommunityCardActions>
                                     </CommunityCard>
                                 ))}

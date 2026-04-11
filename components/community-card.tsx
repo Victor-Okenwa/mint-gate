@@ -8,6 +8,8 @@ import Link from "next/link"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog"
 import { ccc } from "@ckb-ccc/connector-react"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+import { LoadingSwap } from "./ui/loading-swap"
 
 export function CommunityCard({
     children,
@@ -67,30 +69,90 @@ export function CommunityCardViewButton({ className, href, ...props }: { classNa
     )
 }
 
-export function CommunityCardJoinButton({ className, mintPrice, creatorAddress, ...props }: { className?: ClassValue, mintPrice: number, creatorAddress: string } & HTMLAttributes<HTMLButtonElement>) {
+export function CommunityCardJoinButton({ className, mintPrice, communityId, creatorAddress, ...props }: { className?: ClassValue, mintPrice: number, communityId: string, creatorAddress: string } & HTMLAttributes<HTMLButtonElement>) {
     const [isOpen, setIsOpen] = useState(false);
-
+    const [isLoading, setIsLoading] = useState(false);
     const cccClient = ccc.useCcc();
+    const signer = ccc.useSigner();
+
+    const router = useRouter();
 
     const handleJoin = useCallback(async () => {
-        const { script: toLock } = await ccc.Address.fromString(creatorAddress, cccClient.client);
 
-        const tx = ccc.Transaction.from({
-            outputs: [{ lock: toLock }],
-            outputsData: [],
-        });
-
-        tx.outputs.forEach((output, i) => {
-            if (output.capacity > ccc.fixedPointFrom(mintPrice)) {
-                toast.error(`Insufficient balance: ${output.capacity} < ${mintPrice} CKB at ${i}`);
+        try {
+            setIsLoading(true);
+            if (!signer) {
+                toast.error("Connect wallet first");
                 return;
             }
 
-            output.capacity = ccc.fixedPointFrom(mintPrice);
-        });
+            if (!creatorAddress) {
+                toast.error("Community creator address not found");
+                return;
+            }
 
-        console.log(tx)
-    }, [cccClient, mintPrice, creatorAddress]);
+            if (!communityId) {
+                toast.error("Community not found");
+                return;
+            }
+
+            const { script: toLock } = await ccc.Address.fromString(creatorAddress, cccClient.client);
+
+            const tx = ccc.Transaction.from({
+                outputs: [{ lock: toLock }],
+                outputsData: [],
+            });
+
+            tx.outputs.forEach((output, i) => {
+                if (output.capacity > ccc.fixedPointFrom(mintPrice)) {
+                    toast.error(`Insufficient balance: ${output.capacity} < ${mintPrice} CKB at ${i}`);
+                    return;
+                }
+
+                output.capacity = ccc.fixedPointFrom(mintPrice);
+            });
+
+            // Complete missing parts for transaction
+            await tx.completeInputsByCapacity(signer!);
+            await tx.completeFeeBy(signer!, 1000);
+
+            const txHash = await signer?.sendTransaction(tx);
+
+            if (!txHash) {
+                toast.error("Failed to join community, try again.");
+                return;
+            }
+
+            const response = await fetch("/api/community/join-community", {
+                method: "POST",
+                body: JSON.stringify({
+                    community_id: communityId,
+                    user_address: signer?.getRecommendedAddress(),
+                    tx_hash: txHash,
+                }),
+            });
+
+            if (!response.ok) {
+                toast.error(await response.text() ?? "Failed to join community, try again.");
+                return;
+            }
+
+            setIsOpen(false);
+            toast.success("Joined community successfully", {
+                duration: 7000,
+                action: {
+                    label: "View Community",
+                    onClick: () => router.replace(`/community/${communityId}`),
+                },
+            });
+            router.replace(`/community/${communityId}`);
+        } catch (error) {
+            console.error(error);
+            toast.error((error as Error).message || "Failed to join community, try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    }, [cccClient, mintPrice, creatorAddress, communityId, router, signer]);
 
     return (
         <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
@@ -108,7 +170,9 @@ export function CommunityCardJoinButton({ className, mintPrice, creatorAddress, 
                 </AlertDialogDescription>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleJoin}>Join</AlertDialogAction>
+                    <Button onClick={handleJoin} disabled={isLoading}>
+                        <LoadingSwap isLoading={isLoading}>Join</LoadingSwap>
+                    </Button>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>

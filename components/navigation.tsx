@@ -13,9 +13,13 @@ export function Navigation({ isConnected }: { isConnected: boolean }) {
             <Link href="/" className="text-sm font-semibold tracking-widest uppercase">Mint Gate</Link>
 
             {isConnected ? (
-                <Link href="/dashboard">
-                    <Button variant="outline" size="lg">Dashboard</Button>
-                </Link>
+                <div className="flex items-center gap-2">
+                    <Link href="/dashboard">
+                        <Button variant="outline" size="lg">Dashboard</Button>
+                    </Link>
+
+                    <ConnectWallet  />
+                </div>
             ) : (
                 <ConnectWallet />
             )}
