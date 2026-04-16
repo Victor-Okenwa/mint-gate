@@ -17,6 +17,8 @@ export async function GET(req: Request) {
     const limit = Math.max(1, Math.min(100, Number(searchParams.get("limit")) || 10));
     const userAddress = (searchParams.get("user_address") ?? "").trim();
 
+    console.log(userAddress)
+
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
@@ -57,6 +59,8 @@ export async function GET(req: Request) {
             const cid = String(m.community_id);
             membersCountByCommunity.set(cid, (membersCountByCommunity.get(cid) ?? 0) + 1);
         }
+
+        console.log(allMembersResult)
 
         if (userAddress) {
             if (userMembershipResult.error) {

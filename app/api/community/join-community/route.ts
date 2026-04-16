@@ -11,9 +11,16 @@ export async function POST(req: Request) {
             tx_hash,
         } = body;
 
-        const isMember = await supabaseAdmin.from("members").select("*").eq("community_id", community_id).eq("user_address", user_address).single();
+        console.log("JOIN COMMUNITY", body)
 
-        if (isMember) {
+        const data = await supabaseAdmin.from("members").select("*").eq("community_id", community_id).eq("user_address", user_address).maybeSingle();
+
+        if (data.error) {
+            console.log(data.error);
+            return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+        }
+
+        if (data.count) {
             return NextResponse.json({ error: "You are already a member of this community" }, { status: 400 });
         }
 

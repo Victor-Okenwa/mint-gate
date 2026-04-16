@@ -10,6 +10,7 @@ import { ccc } from "@ckb-ccc/connector-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { LoadingSwap } from "./ui/loading-swap"
+import { useApp } from "./providers/app-provider"
 
 export function CommunityCard({
     children,
@@ -72,8 +73,7 @@ export function CommunityCardViewButton({ className, href, ...props }: { classNa
 export function CommunityCardJoinButton({ className, mintPrice, communityId, creatorAddress, ...props }: { className?: ClassValue, mintPrice: number, communityId: string, creatorAddress: string } & HTMLAttributes<HTMLButtonElement>) {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const cccClient = ccc.useCcc();
-    const signer = ccc.useSigner();
+    const { cccClient, signer, userAddress } = useApp();
 
     const router = useRouter();
 
@@ -127,7 +127,7 @@ export function CommunityCardJoinButton({ className, mintPrice, communityId, cre
                 method: "POST",
                 body: JSON.stringify({
                     community_id: communityId,
-                    user_address: signer?.getRecommendedAddress(),
+                    user_address: userAddress,
                     tx_hash: txHash,
                 }),
             });

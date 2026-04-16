@@ -1,11 +1,28 @@
 "use client";
 
 import { ccc } from "@ckb-ccc/connector-react";
-import { createContext, useContext, useEffect, useState, type JSX, type ReactNode } from "react";
+import { createContext, Dispatch, SetStateAction, useContext, useEffect, useState, type JSX, type ReactNode } from "react";
+
+interface CCCType {
+    isOpen: boolean;
+    open: () => unknown;
+    close: () => unknown;
+    disconnect: () => unknown;
+    setClient: (client: ccc.Client) => unknown;
+    client: ccc.Client;
+    wallet?: ccc.Wallet;
+    signerInfo?: ccc.SignerInfo;
+}
 
 interface AppContextType {
+    cccClient: CCCType;
+    signer: ccc.Signer | undefined;
+    userAddress: string
+    setUserAddress: Dispatch<SetStateAction<string>>
+
     isConnected: boolean;
     setIsConnected: React.Dispatch<React.SetStateAction<boolean>>;
+
     // Add other methods/values to context interface
 }
 
@@ -17,25 +34,39 @@ interface AppProviderProps {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export default function AppProvider({ children }: AppProviderProps): JSX.Element {
-    const [isConnected, setIsConnected] = useState(false);
+    const cccClient = ccc.useCcc();
     const signer = ccc.useSigner();
+
+    const [isConnected, setIsConnected] = useState(false);
+    const [userAddress, setUserAddress] = useState("")
+
 
     useEffect(() => {
         if (!signer) return;
-        async function checkIsConnected() {
+        async function checkIsConnectedAndAddAddress() {
             const isSigned = await signer?.isConnected();
             setIsConnected(isSigned || false);
+
+            if (!isSigned) return;
+
+            const address = await signer?.getRecommendedAddress();
+            setUserAddress(address!);
+            console.log(userAddress)
+
         }
-        checkIsConnected();
+        checkIsConnectedAndAddAddress();
     }, [signer]);
 
 
-    // Add your custom functions here
 
     const value: AppContextType = {
+        cccClient,
+        signer,
+
+        userAddress,
+        setUserAddress,
         isConnected,
         setIsConnected,
-        // Add other values/functions to expose
     };
 
     return (
