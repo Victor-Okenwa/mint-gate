@@ -11,10 +11,10 @@ import {
     CommunityCardMintPrice,
     CommunityCardViewButton,
 } from "@/components/community-card";
+import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Spinner } from "@/components/ui/spinner";
-import { ccc } from "@ckb-ccc/connector-react";
 import { SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -30,25 +30,9 @@ export default function CommunitiesPage() {
     const [error, setError] = useState<string | null>(null);
     const [reloadToken, setReloadToken] = useState(0);
 
-    const signer = ccc.useSigner();
-    const [userAddress, setUserAddress] = useState("");
+    const { userAddress } = useApp();
 
     const loadingMoreRef = useRef(false);
-
-    useEffect(() => {
-        if (!signer) {
-            setUserAddress("");
-            return;
-        }
-        let cancelled = false;
-        (async () => {
-            const addr = await signer.getRecommendedAddress();
-            if (!cancelled) setUserAddress(addr ?? "");
-        })();
-        return () => {
-            cancelled = true;
-        };
-    }, [signer]);
 
     useEffect(() => {
         let cancelled = false;
@@ -63,9 +47,23 @@ export default function CommunitiesPage() {
                     limit: String(PAGE_SIZE),
                 });
                 if (userAddress) params.set("user_address", userAddress);
-                const res = await fetch(`/api/community/getAll?${params}`);
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 25_000); // 25 seconds timeout
+
+                let res;
+
+                try {
+                    res = await fetch(`/api/community/getAll?${params}`, {
+                        signal: controller.signal
+                    });
+                } finally {
+                    clearTimeout(timeout);
+                }
+
                 const json = await res.json();
+
                 if (!res.ok) throw new Error(json.error ?? "Failed to load communities");
+                
                 if (cancelled) return;
                 const batch = json.communities as CommunityListItem[];
                 setItems(batch);
