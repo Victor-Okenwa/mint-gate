@@ -1,9 +1,10 @@
 "use client";
+import { CommunityCardJoinButton } from "@/components/community-card";
 import { useApp } from "@/components/providers/app-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Spinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { CommunityDetail } from "@/utils/constants";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
@@ -15,8 +16,9 @@ export default function CommunityPage() {
     const [error, setError] = useState<string | null>(null);
     const [reloadToken, setReloadToken] = useState(0);
     const [viewSecret, setViewSecret] = useState(false);
+    const [isMember, setIsMember] = useState(false);
 
-    const { userAddress } = useApp()
+    const { userAddress } = useApp();
 
     useEffect(() => {
         setIsLoading(true)
@@ -26,7 +28,6 @@ export default function CommunityPage() {
 
         (async () => {
             try {
-
                 const params = new URLSearchParams();
                 if (!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
                     setError("Community Invalid or not found");
@@ -52,8 +53,7 @@ export default function CommunityPage() {
                 if (!res.ok) throw new Error(json.error ?? "Failed to load communities");
 
                 const details = json.community as CommunityDetail;
-
-                console.log(details)
+                setIsMember(Boolean(details?.isMember));
                 setCommunityDetails(details);
             } catch (error) {
                 setError(error instanceof Error ? error.message : "Something went wrong")
@@ -73,7 +73,7 @@ export default function CommunityPage() {
         <>
             {
                 isLoading && (
-                    <LoadingSkeletion />
+                    <LoadingSkeleton />
                 )
             }
 
@@ -131,19 +131,28 @@ export default function CommunityPage() {
                         </hgroup>
 
 
-                        <div className="flex gap-2">
-                            <p className={cn("px-4 py-3 blur-sm border rounded-sm text-primary/70 pointer-events-none", {
-                                "blur-0 pointer-events-auto": viewSecret
-                            })}>{communityDetails?.hiddenLink}</p>
-                            <Button variant={"outline"} onClick={() => setViewSecret((prev) => !prev)} className="h-auto">
-                                {viewSecret ?
-                                    (<>
-                                        <EyeOffIcon /> Hide
-                                    </>) : (<>
-                                        <EyeIcon /> View
-                                    </>)}
-                            </Button>
-                        </div>
+                        {isMember && (
+                            <div className="flex gap-2">
+                                <p className={cn("px-4 py-3 blur-sm border rounded-sm text-primary/70 pointer-events-none", {
+                                    "blur-0 pointer-events-auto": viewSecret && isMember
+                                })}>{communityDetails?.hiddenLink}</p>
+                                <Button variant={"outline"} onClick={() => setViewSecret((prev) => !prev)} className="h-auto" disabled={!isMember}>
+                                    {viewSecret ?
+                                        (<>
+                                            <EyeOffIcon /> Hide
+                                        </>) : (<>
+                                            <EyeIcon /> View
+                                        </>)}
+                                </Button>
+                            </div>
+
+                        )}
+
+                        {!isMember && (
+                            <div>
+                                <CommunityCardJoinButton communityId={String(communityDetails?.communityID)} creatorAddress={String(communityDetails?.creatorAddress)} mintPrice={Number(communityDetails?.mintPrice)} />
+                            </div>
+                        )}
                     </section>
 
                 </article>
@@ -152,10 +161,46 @@ export default function CommunityPage() {
     );
 };
 
-function LoadingSkeletion() {
+function LoadingSkeleton() {
     return (
-        <div className="min-h-screen">
-            <Spinner className="size-10" />
-        </div>
+        <article>
+            <section className="flex flex-wrap gap-4 py-4 px-2 sm:px-4">
+                <hgroup className="space-y-2 sm:flex-1">
+                    <Skeleton className="h-8 w-56" />
+                    <Skeleton className="h-4 w-full max-w-3xl" />
+                    <Skeleton className="h-4 w-full max-w-2xl" />
+                    <Skeleton className="h-4 w-2/3 max-w-xl" />
+                </hgroup>
+
+                <Skeleton className="h-6 w-28 rounded-full" />
+            </section>
+
+            <Separator className="my-2" />
+
+            <section className="px-2 sm:px-4 py-4 space-y-4">
+                <Skeleton className="h-7 w-20" />
+
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-full max-w-2xl" />
+                    <Skeleton className="h-4 w-full max-w-2xl" />
+                    <Skeleton className="h-4 w-5/6 max-w-xl" />
+                    <Skeleton className="h-4 w-4/5 max-w-lg" />
+                </div>
+            </section>
+
+            <Separator className="my-2" />
+
+            <section className="px-2 sm:px-4 py-4 space-y-4">
+                <hgroup className="space-y-2">
+                    <Skeleton className="h-7 w-52" />
+                    <Skeleton className="h-4 w-64" />
+                </hgroup>
+
+                <div className="flex gap-2">
+                    <Skeleton className="h-12 flex-1 max-w-md rounded-sm" />
+                    <Skeleton className="h-12 w-24 rounded-md" />
+                </div>
+            </section>
+        </article>
     )
 }
