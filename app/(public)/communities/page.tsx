@@ -234,7 +234,15 @@ export default function CommunitiesPage() {
                                             <CommunityCardViewButton
                                                 href={`/community/${community.communityID}`}
                                             />
-                                            {!community.isMember || !community.isCreator && <CommunityCardJoinButton mintPrice={community.mintPrice} creatorAddress={community.creatorAddress} communityId={community.communityID} />}
+
+                                            {!(community.isCreator || community.isMember) && (
+                                                <CommunityCardJoinButton
+                                                    mintPrice={community.mintPrice}
+                                                    creatorAddress={community.creatorAddress}
+                                                    communityId={community.communityID}
+                                                />
+                                            )}
+
                                         </CommunityCardActions>
                                     </CommunityCard>
                                 ))}

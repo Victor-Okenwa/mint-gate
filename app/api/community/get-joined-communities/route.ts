@@ -1,58 +1,38 @@
 import { supabaseAdmin } from "@/lib/superbase/server";
-import { CommunityDetail } from "@/utils/constants";
 import { NextResponse } from "next/server";
+import { CommunityListItem } from "../get-all/route";
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
+    const page = Math.max(1, Number(searchParams.get("page")) || 1);
+    const limit = Math.max(1, Math.min(100, Number(searchParams.get("limit")) || 10));
     const userAddress = (searchParams.get("user_address") ?? "").trim();
 
-    const { data: members, error: membersError } = await supabaseAdmin
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
+    const { data: memberships, error: membersError } = await supabaseAdmin
         .from("members")
         .select("*")
+        .range(from, to)
         .eq("user_address", userAddress);
 
-    console.log(members, membersError);
+    if (membersError) return NextResponse.json({ error: membersError.message }, { status: 500 });
+    if (!memberships) return NextResponse.json({ communities: [] }, { status: 404 });
 
-    return NextResponse.json({ community: members });
+    const communities: CommunityListItem[] = [];
 
-    const [membersResult, userMembershipResult] = await Promise.all([
-        supabaseAdmin.from("members").select("community_id").eq("community_id", communityId),
-        userAddress
-            ? supabaseAdmin
-                .from("members")
-                .select("id")
-                .eq("community_id", communityId)
-                .eq("user_address", userAddress)
-                .maybeSingle()
-            : Promise.resolve({ data: null as { id: string } | null, error: null }),
-    ]);
+    memberships.forEach(async (membership) => {
+        console.log(membership);
 
-    if (membersResult.error) {
-        console.error("getCommunity members count:", membersResult.error);
-        return NextResponse.json({ error: membersResult.error.message }, { status: 500 });
-    }
+        const { data, error } = await supabaseAdmin.from("communities").select("*").eq("id", membership.community_id).maybeSingle()
 
-    if (userMembershipResult.error) {
-        console.error("getCommunity membership:", userMembershipResult.error);
-        return NextResponse.json({ error: userMembershipResult.error.message }, { status: 500 });
-    }
+        if (!error && data) {
+            communities.push(data);
+        }
+    });
 
-    console.log(userMembershipResult)
+    console.log(communities, memberships);
 
-    const payload: CommunityDetail = {
-        communityID: String(community.id),
-        name: community.name ?? "",
-        description: community.description ?? "",
-        guidelines: Array.isArray(community.guidelines)
-            ? community.guidelines.map((item) => String(item))
-            : [],
-        mintPrice: Number(community.mint_price ?? 0),
-        creatorAddress: community.creator_address ?? "",
-        hiddenLink: community.hidden_link ?? null,
-        txHash: community.tx_hash ?? null,
-        isMember: userMembershipResult.data !== null,
-        membersCount: membersResult.data?.length ?? 0,
-    };
-
-    return NextResponse.json({ community: payload });
+    return NextResponse.json({ communities });
 }

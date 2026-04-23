@@ -18,8 +18,6 @@ export async function GET(req: Request) {
     const limit = Math.max(1, Math.min(100, Number(searchParams.get("limit")) || 10));
     const userAddress = (searchParams.get("user_address") ?? "").trim();
 
-    console.log(userAddress)
-
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
