@@ -5,7 +5,7 @@ import { useCallback, useState, type HTMLAttributes, type ReactNode } from "reac
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import Link from "next/link"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog"
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog"
 import { ccc } from "@ckb-ccc/connector-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -27,12 +27,14 @@ export function CommunityCard({
     )
 }
 
-export function CommunityCardHeader({ className, title, isMember, ...props }: { className?: ClassValue, title: string, isMember: boolean } & HTMLAttributes<HTMLDivElement>) {
+export function CommunityCardHeader({ className, title, isMember, isCreator, ...props }: { className?: ClassValue, title: string, isMember: boolean, isCreator: boolean } & HTMLAttributes<HTMLDivElement>) {
     return (
         <div className={cn("flex items-start justify-between", className)} {...props}>
             <h3 className="text-base font-semibold">{title}</h3>
-            {isMember && (
-                <Badge variant="outline" className="text-xs">Member</Badge>
+            {(isMember || isCreator) && (
+                <Badge variant="outline" className={cn("text-xs", {
+                    "border-yellow-500": isCreator
+                })}>{isCreator ? "Creator" : "Member"}</Badge>
             )}
         </div>
     )

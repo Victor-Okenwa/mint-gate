@@ -11,16 +11,26 @@ export async function POST(req: Request) {
             tx_hash,
         } = body;
 
-        console.log("JOIN COMMUNITY", body)
+        const [creator, members] = await Promise.all([
+            supabaseAdmin.from("communities").select("creator_address").eq("id", community_id).eq("creator_address", user_address).maybeSingle(),
+            supabaseAdmin.from("members").select("id").eq("community_id", community_id).eq("user_address", user_address).maybeSingle()
+        ]);
 
-        const data = await supabaseAdmin.from("members").select("*").eq("community_id", community_id).eq("user_address", user_address).maybeSingle();
-
-        if (data.error) {
-            console.log(data.error);
+        if (creator.error) {
+            console.log(members.error);
             return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
         }
 
-        if (data.count) {
+        if (creator.count) {
+            return NextResponse.json({ error: "You can't be a member when you are the creator of this community" }, { status: 400 });
+        }
+
+        if (members.error) {
+            console.log(members.error);
+            return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+        }
+
+        if (members.count) {
             return NextResponse.json({ error: "You are already a member of this community" }, { status: 400 });
         }
 

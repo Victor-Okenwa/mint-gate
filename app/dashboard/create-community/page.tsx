@@ -140,7 +140,7 @@ export default function CreateCommunityPage() {
             }
 
             toast.success("Community created successfully 🚀");
-            router.push(`/dashboard/community/${communityId}`);
+            router.push(`/community/${communityId}`);
         } catch (error: unknown) {
             console.error("handleSubmit error:", error);
             const msg = (error as Error)?.message ?? String(error);

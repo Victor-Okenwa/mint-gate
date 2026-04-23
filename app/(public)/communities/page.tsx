@@ -13,15 +13,13 @@ import {
 } from "@/components/community-card";
 import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
-import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { Spinner } from "@/components/ui/spinner";
-import { SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const PAGE_SIZE = 10;
 
 export default function CommunitiesPage() {
-    const [search, setSearch] = useState("");
+    const [search, _setSearch] = useState("");
     const [items, setItems] = useState<CommunityListItem[]>([]);
     const [page, setPage] = useState(1);
     const [initialLoading, setInitialLoading] = useState(true);
@@ -63,7 +61,7 @@ export default function CommunitiesPage() {
                 const json = await res.json();
 
                 if (!res.ok) throw new Error(json.error ?? "Failed to load communities");
-                
+
                 if (cancelled) return;
                 const batch = json.communities as CommunityListItem[];
                 setItems(batch);
@@ -153,7 +151,7 @@ export default function CommunitiesPage() {
 
     return (
         <div className="px-4 pb-16 md:px-8">
-            <div className="flex justify-center items-center sticky top-16 z-10 py-4">
+            {/*        <div className="flex justify-center items-center sticky top-16 z-10 py-4">
                 <fieldset className="w-full max-w-md bg-background rounded-full p-2 border border-border shadow-sm flex">
                     <InputGroup>
                         <InputGroupInput
@@ -164,16 +162,16 @@ export default function CommunitiesPage() {
                             className="rounded-full!"
                             name="search"
                         />
-                        {/* <InputGroupAddon>
+                        <InputGroupAddon>
                             <SearchIcon className="size-4 text-muted-foreground" />
-                        </InputGroupAddon> */}
+                        </InputGroupAddon> 
                     </InputGroup>
 
                     <Button className="rounded-s-none rounded-e-full">
                         <SearchIcon />
                     </Button>
                 </fieldset>
-            </div>
+            </div> */}
 
             <section className="max-w-6xl mx-auto">
                 {initialLoading ? (
@@ -224,6 +222,7 @@ export default function CommunitiesPage() {
                                         <CommunityCardHeader
                                             title={community.name}
                                             isMember={community.isMember}
+                                            isCreator={community.isCreator}
                                         />
                                         <CommunityCardDescription description={community.description} />
                                         <CommunityCardMemberCount count={community.membersCount} />
@@ -236,7 +235,7 @@ export default function CommunitiesPage() {
                                             <CommunityCardViewButton
                                                 href={`/community/${community.communityID}`}
                                             />
-                                            {!community.isMember && <CommunityCardJoinButton mintPrice={community.mintPrice} creatorAddress={community.creatorAddress} communityId={community.communityID} />}
+                                            {!community.isMember || !community.isCreator && <CommunityCardJoinButton mintPrice={community.mintPrice} creatorAddress={community.creatorAddress} communityId={community.communityID} />}
                                         </CommunityCardActions>
                                     </CommunityCard>
                                 ))}

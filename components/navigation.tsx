@@ -1,9 +1,6 @@
-import ConnectWallet from "./ConnectWallet";
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { useApp } from "./providers/app-provider";
-import { useEffect } from "react";
-
+import { WalletConnect, WalletConnectButton, WalletConnectInfoContainer, WalletConnectInfoImage } from "./ConnectWallet";
 
 /**
  * Navigation component
@@ -24,7 +21,11 @@ export function Navigation({ isConnected }: { isConnected: boolean }) {
                         <Button variant="outline" size="lg">Dashboard</Button>
                     </Link>
 
-                    <ConnectWallet />
+                    <WalletConnect>
+                        <WalletConnectInfoContainer className="p-0 bg-transparent">
+                            <WalletConnectInfoImage />
+                        </WalletConnectInfoContainer>
+                    </WalletConnect>
 
                     {/* {wallet && (<div className="cursor-pointer rounded-full  border-solid border-transparent transition-colors flex items-center justify-center bg-transparent text-foreground border gap-2 dark:hover:bg-secondary text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
                         onClick={open} >
@@ -44,7 +45,9 @@ export function Navigation({ isConnected }: { isConnected: boolean }) {
 
                 </div>
             ) : (
-                <ConnectWallet />
+                <WalletConnect>
+                    <WalletConnectButton />
+                </WalletConnect>
             )}
         </nav >
     );

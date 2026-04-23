@@ -55,7 +55,7 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
 
         }
         checkIsConnectedAndAddAddress();
-    }, [signer]);
+    }, [signer, userAddress]);
 
 
 

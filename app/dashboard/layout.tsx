@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
-import ConnectWallet from "@/components/ConnectWallet";
+import ConnectWallet, { WalletConnect, WalletConnectInfoAddress, WalletConnectInfoBalance, WalletConnectInfoContainer, WalletConnectInfoImage } from "@/components/ConnectWallet";
 
 const sidebarItems = [
     { title: "My Memberships", url: "/dashboard" },
@@ -104,7 +104,16 @@ function AppSidebar() {
                 })}>
                     <SidebarGroupLabel className="text-xs text-muted-foreground">Wallet</SidebarGroupLabel>
                     <SidebarGroupContent>
-                        <ConnectWallet />
+                        <WalletConnect>
+                            <WalletConnectInfoContainer className="flex gap-1 items-center bg-muted py-2 px-4">
+                                <WalletConnectInfoImage />
+
+                                <div className="flex flex-col">
+                                    <WalletConnectInfoBalance decimalPlaces={2} className="text-sm" />
+                                    <WalletConnectInfoAddress frontChars={5} endChars={5} />
+                                </div>
+                            </WalletConnectInfoContainer>
+                        </WalletConnect>
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>

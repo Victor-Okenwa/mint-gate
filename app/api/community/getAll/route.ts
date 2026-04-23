@@ -7,6 +7,7 @@ export type CommunityListItem = {
     description: string;
     mintPrice: number;
     creatorAddress: string;
+    isCreator: boolean;
     isMember: boolean;
     membersCount: number;
 };
@@ -81,6 +82,7 @@ export async function GET(req: Request) {
             description: row.description ?? "",
             mintPrice: Number(row.mint_price ?? 0),
             creatorAddress: row.creator_address ?? "",
+            isCreator: row.creator_address == userAddress,
             isMember: userAddress ? membershipIds.has(id) : false,
             membersCount: membersCountByCommunity.get(id) ?? 0,
         };
