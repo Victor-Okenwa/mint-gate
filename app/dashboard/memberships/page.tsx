@@ -1,26 +1,15 @@
-"use client";
-
-import type { CommunityListItem } from "@/app/api/community/get-all/route";
-import {
-    CommunityCard,
-    CommunityCardActions,
-    CommunityCardDescription,
-    CommunityCardHeader,
-    CommunityCardJoinButton,
-    CommunityCardMemberCount,
-    CommunityCardMintPrice,
-    CommunityCardViewButton,
-} from "@/components/community-card";
+import { CommunityListItem } from "@/app/api/community/get-all/route";
+import { CommunityCard, CommunityCardActions, CommunityCardDescription, CommunityCardHeader, CommunityCardJoinButton, CommunityCardMemberCount, CommunityCardMemberCount, CommunityCardMintPrice, CommunityCardViewButton } from "@/components/community-card";
 import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { PAGE_SIZE } from "@/utils/constants";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export default function CommunitiesPage() {
-    const [search, setSearch] = useState("");
+export default function MembershipsPage() {
     const [items, setItems] = useState<CommunityListItem[]>([]);
     const [page, setPage] = useState(1);
+    const [search, setSearch] = useState("");
     const [initialLoading, setInitialLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(true);
@@ -37,6 +26,7 @@ export default function CommunitiesPage() {
         setError(null);
         setPage(1);
         setHasMore(true);
+
         (async () => {
             try {
                 const params = new URLSearchParams({
@@ -50,7 +40,7 @@ export default function CommunitiesPage() {
                 let res;
 
                 try {
-                    res = await fetch(`/api/community/get-all?${params}`, {
+                    res = await fetch(`/api/community/get-joined-communities?${params}`, {
                         signal: controller.signal
                     });
                 } finally {
@@ -78,7 +68,7 @@ export default function CommunitiesPage() {
         return () => {
             cancelled = true;
         };
-    }, [userAddress, reloadToken]);
+    }, [reloadToken, userAddress])
 
     const refetchInitial = useCallback(() => {
         setReloadToken((n) => n + 1);
@@ -149,29 +139,7 @@ export default function CommunitiesPage() {
     }, [items, search]);
 
     return (
-        <div className="px-4 pb-16 md:px-8">
-            {/*        <div className="flex justify-center items-center sticky top-16 z-10 py-4">
-                <fieldset className="w-full max-w-md bg-background rounded-full p-2 border border-border shadow-sm flex">
-                    <InputGroup>
-                        <InputGroupInput
-                            placeholder="Search communities…"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            aria-label="Search communities"
-                            className="rounded-full!"
-                            name="search"
-                        />
-                        <InputGroupAddon>
-                            <SearchIcon className="size-4 text-muted-foreground" />
-                        </InputGroupAddon> 
-                    </InputGroup>
-
-                    <Button className="rounded-s-none rounded-e-full">
-                        <SearchIcon />
-                    </Button>
-                </fieldset>
-            </div> */}
-
+        <article className="px-4 pb-16 md:px-8">
             <section className="max-w-6xl mx-auto">
                 {initialLoading ? (
                     <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
@@ -264,6 +232,6 @@ export default function CommunitiesPage() {
                         </p>
                     )}
             </section>
-        </div>
+        </article>
     );
-}
+};

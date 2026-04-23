@@ -10,3 +10,5 @@ export type CommunityDetail = {
     isMember: boolean;
     membersCount: number;
 };
+
+export const PAGE_SIZE = 10;

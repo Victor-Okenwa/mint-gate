@@ -42,7 +42,7 @@ export default function CommunityPage() {
 
                 let res;
                 try {
-                    res = await fetch(`/api/community/getCommunity?${params}`, {
+                    res = await fetch(`/api/community/get-community?${params}`, {
                         // signal: controller.signal,
                     });
                 } finally {

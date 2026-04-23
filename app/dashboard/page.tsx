@@ -4,6 +4,9 @@ import { mockCommunities, userMemberships } from "@/lib/mock-data";
 import { CommunityCard, CommunityCardActions, CommunityCardDescription, CommunityCardJoinButton, CommunityCardViewButton, CommunityCardHeader, CommunityCardMemberCount, CommunityCardMintPrice } from "@/components/community-card";
 
 export default function DashboardPage() {
+
+    
+
     return (
         <main className="flex-1 p-6">
             <h2 className="text-xl font-semibold mb-8 tracking-tight">My Memberships</h2>

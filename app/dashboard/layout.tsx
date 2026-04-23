@@ -20,13 +20,14 @@ import { useRouter } from "next/navigation";
 import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
-import ConnectWallet, { WalletConnect, WalletConnectInfoAddress, WalletConnectInfoBalance, WalletConnectInfoContainer, WalletConnectInfoImage } from "@/components/ConnectWallet";
+import { WalletConnect, WalletConnectInfoAddress, WalletConnectInfoBalance, WalletConnectInfoContainer, WalletConnectInfoImage } from "@/components/ConnectWallet";
 
 const sidebarItems = [
-    { title: "My Memberships", url: "/dashboard" },
+    { title: "My Communities", url: "/dashboard" },
+    { title: "My Memberships", url: "/dashboard/memberships" },
     { title: "Discover Communities", url: "/communities" },
     { title: "Create Community", url: "/dashboard/create-community" },
-    { title: "Settings", url: "/dashboard" },
+    // { title: "Settings", url: "/dashboard" },
 ];
 
 
