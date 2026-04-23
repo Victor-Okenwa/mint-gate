@@ -11,6 +11,7 @@ export async function GET(req: Request) {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
+    // Get all memberships for the user, paged
     const { data: memberships, error: membersError } = await supabaseAdmin
         .from("members")
         .select("*")
@@ -18,21 +19,45 @@ export async function GET(req: Request) {
         .eq("user_address", userAddress);
 
     if (membersError) return NextResponse.json({ error: membersError.message }, { status: 500 });
-    if (!memberships) return NextResponse.json({ communities: [] }, { status: 404 });
+    if (!memberships || memberships.length === 0) return NextResponse.json({ communities: [] }, { status: 200 });
 
-    const communities: CommunityListItem[] = [];
+    // Get the community IDs to fetch details for
+    const communityIds = memberships.map((m) => m.community_id);
 
-    memberships.forEach(async (membership) => {
-        console.log(membership);
+    // If no memberships, return empty list
+    if (!communityIds.length) {
+        return NextResponse.json({ communities: [] }, { status: 200 });
+    }
 
-        const { data, error } = await supabaseAdmin.from("communities").select("*").eq("id", membership.community_id).maybeSingle()
+    // Fetch all communities in one query using `in`
+    const { data: communityRows, error: communitiesError } = await supabaseAdmin
+        .from("communities")
+        .select("*")
+        .in("id", communityIds);
 
-        if (!error && data) {
-            communities.push(data);
-        }
+    if (communitiesError) return NextResponse.json({ error: communitiesError.message }, { status: 500 });
+
+    // Optionally: Make sure the order matches the order of communityIds (to preserve pagination relevance)
+    let communities = [];
+    if (communityRows) {
+        // Could filter/map if needed to ensure order
+        const communityMap = Object.fromEntries(communityRows.map((row) => [row.id, row]));
+        communities = communityIds.map((cid) => communityMap[cid]).filter(Boolean);
+    }
+
+
+    const payload: CommunityListItem[] = communities.map((row) => {
+        const id = String(row.id);
+        return {
+            communityID: id,
+            name: row.name ?? "",
+            description: row.description ?? "",
+            mintPrice: Number(row.mint_price ?? 0),
+            creatorAddress: row.creator_address ?? "",
+            isCreator: row.creator_address == userAddress,
+            isMember: true,
+        };
     });
 
-    console.log(communities, memberships);
-
-    return NextResponse.json({ communities });
+    return NextResponse.json({ communities: payload });
 }

@@ -1,9 +1,9 @@
 "use client"
 
-import ConnectWallet from "@/components/ConnectWallet";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useApp } from "@/components/providers/app-provider";
+import { WalletConnect, WalletConnectButton } from "@/components/ConnectWallet";
 
 export default function Home() {
   const { isConnected } = useApp();
@@ -24,7 +24,9 @@ export default function Home() {
               <Button size="lg">Go to Dashboard</Button>
             </Link>
           ) : (
-            <ConnectWallet />
+            <WalletConnect>
+              <WalletConnectButton />
+            </WalletConnect>
           )}
           <Link href="/communities">
             <Button variant="outline" size="lg">Explore Communities</Button>

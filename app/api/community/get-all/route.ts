@@ -9,7 +9,7 @@ export type CommunityListItem = {
     creatorAddress: string;
     isCreator: boolean;
     isMember: boolean;
-    membersCount: number;
+    membersCount?: number;
 };
 
 export async function GET(req: Request) {

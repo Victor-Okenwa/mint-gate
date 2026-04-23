@@ -141,7 +141,7 @@ export default function MembershipsPage() {
     }, [items, search]);
 
     return (
-        <article className="px-4 pb-16 md:px-8">
+        <article className="px-4 pb-16 md:px-8 py-4">
             <section className="max-w-6xl mx-auto">
                 {initialLoading ? (
                     <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
@@ -205,7 +205,6 @@ export default function MembershipsPage() {
                                                 href={`/community/${community.communityID}`}
                                             />
 
-                                            {(!community.isMember || !community.isCreator) ? <CommunityCardJoinButton mintPrice={community.mintPrice} creatorAddress={community.creatorAddress} communityId={community.communityID} /> : ''}
                                         </CommunityCardActions>
                                     </CommunityCard>
                                 ))}
