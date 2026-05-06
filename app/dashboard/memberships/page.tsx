@@ -1,7 +1,7 @@
 "use client";
 
 import { CommunityListItem } from "@/app/api/community/get-all/route";
-import { CommunityCard, CommunityCardActions, CommunityCardDescription, CommunityCardHeader, CommunityCardJoinButton, CommunityCardMemberCount, CommunityCardMintPrice, CommunityCardViewButton } from "@/components/community-card";
+import { CommunityCard, CommunityCardActions, CommunityCardDescription, CommunityCardHeader, CommunityCardMemberCount, CommunityCardMintPrice, CommunityCardViewButton } from "@/components/community-card";
 import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -141,7 +141,9 @@ export default function MembershipsPage() {
     }, [items, search]);
 
     return (
-        <article className="px-4 pb-16 md:px-8 py-4">
+        <article className="px-4 pb-16 md:px-8 py-4 space-y-3">
+            <h2 className="font-bold">Your Memberships</h2>
+
             <section className="max-w-6xl mx-auto">
                 {initialLoading ? (
                     <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
@@ -194,7 +196,6 @@ export default function MembershipsPage() {
                                             isCreator={community.isCreator}
                                         />
                                         <CommunityCardDescription description={community.description} />
-                                        <CommunityCardMemberCount count={community.membersCount} />
                                         &nbsp;
                                         <CommunityCardMintPrice
                                             price={community.mintPrice}

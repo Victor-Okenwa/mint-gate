@@ -154,7 +154,7 @@ export function CommunityCardJoinButton({ className, mintPrice, communityId, cre
         } finally {
             setIsLoading(false);
         }
-    }, [cccClient, mintPrice, creatorAddress, communityId, router, signer]);
+    }, [signer, creatorAddress, communityId, cccClient.client, userAddress, router, mintPrice]);
 
     return (
         <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
@@ -176,6 +176,59 @@ export function CommunityCardJoinButton({ className, mintPrice, communityId, cre
                         <LoadingSwap isLoading={isLoading}>Join</LoadingSwap>
                     </Button>
                 </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    )
+}
+
+export function CommunityCardDeleteButton({ className, communityId, communityName, isCreator, ...props }: { className?: ClassValue, communityId: string, communityName: string, isCreator: boolean } & HTMLAttributes<HTMLButtonElement>) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const { cccClient, signer, userAddress } = useApp();
+
+    const router = useRouter();
+
+    const handleDelete = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            if (!signer) {
+                toast.error("Connect wallet first");
+                return;
+            }
+
+            if (!communityId) {
+                toast.error("Community not found");
+                return;
+            }
+        } catch (error) {
+            console.log(error as Error);
+            toast.error((error as Error).message || "Failed to delete community, try again.");
+        }
+        finally {
+            setIsLoading(false);
+        }
+    }, [signer, communityId, cccClient.client, userAddress, router]);
+
+    if (!isCreator) {
+        return null;
+    }
+
+    return (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" className={cn(className)} {...props}>
+                    Delete
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>Delete {communityName}</AlertDialogHeader>
+                <AlertDialogDescription>
+                    Are you sure you want to delete this community? It will be permanently deleted from our records  and cannot be recovered.
+                </AlertDialogDescription>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <Button variant="destructive" onClick={handleDelete} disabled={isLoading}>
+                    <LoadingSwap isLoading={isLoading}>Delete</LoadingSwap>
+                </Button>
             </AlertDialogContent>
         </AlertDialog>
     )

@@ -41,8 +41,6 @@ export function Navigation({ isConnected }: { isConnected: boolean }) {
                             </p>
                         </div>
                     </div>)} */}
-
-
                 </div>
             ) : (
                 <WalletConnect>

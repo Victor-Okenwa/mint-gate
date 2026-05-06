@@ -10,6 +10,7 @@ export type CommunityListItem = {
     isCreator: boolean;
     isMember: boolean;
     membersCount?: number;
+    txHash?: string;
 };
 
 export async function GET(req: Request) {
