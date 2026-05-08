@@ -11,6 +11,7 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { LoadingSwap } from "./ui/loading-swap"
 import { useApp } from "./providers/app-provider"
+import { Spinner } from "./ui/spinner"
 
 export function CommunityCard({
     children,
@@ -185,12 +186,14 @@ export function CommunityCardDeleteButton({ className, communityId, communityNam
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { cccClient, signer, userAddress } = useApp();
+    const [deleteState, setDeleteState] = useState<'verify & delete' | 'verifying' | 'verified' | 'deleting'>("verify & delete");
 
     const router = useRouter();
 
     const handleDelete = useCallback(async () => {
         try {
             setIsLoading(true);
+            setDeleteState("verifying")
             if (!signer) {
                 toast.error("Connect wallet first");
                 return;
@@ -200,14 +203,52 @@ export function CommunityCardDeleteButton({ className, communityId, communityNam
                 toast.error("Community not found");
                 return;
             }
+
+            const params = new URLSearchParams({
+                community_id: communityId,
+                user_address: userAddress
+            });
+
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 25_000); // 25 seconds timeout
+
+            let res;
+            try {
+                res = await fetch(`/api/community/verify-community-ownership?${params}`, {
+                    signal: controller.signal,
+                });
+            } finally {
+                clearTimeout(timeout);
+            }
+
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error ?? "Failed to load communities");
+            console.log(json)
+            const { txHash, verified } = json;
+
+            if (!txHash) {
+                toast.error("Community not found");
+                return;
+            }
+
+
+            if (verified) {
+
+            } else {
+                toast.error("You were not verified as the true owner of this community");
+                return;
+            }
+
+
         } catch (error) {
             console.log(error as Error);
             toast.error((error as Error).message || "Failed to delete community, try again.");
         }
         finally {
             setIsLoading(false);
+            setDeleteState("verify & delete")
         }
-    }, [signer, communityId, cccClient.client, userAddress, router]);
+    }, [signer, communityId, cccClient.client]);
 
     if (!isCreator) {
         return null;
@@ -221,14 +262,39 @@ export function CommunityCardDeleteButton({ className, communityId, communityNam
                 </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
-                <AlertDialogHeader>Delete {communityName}</AlertDialogHeader>
-                <AlertDialogDescription>
-                    Are you sure you want to delete this community? It will be permanently deleted from our records  and cannot be recovered.
-                </AlertDialogDescription>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <Button variant="destructive" onClick={handleDelete} disabled={isLoading}>
-                    <LoadingSwap isLoading={isLoading}>Delete</LoadingSwap>
-                </Button>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>
+                        Delete {communityName}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Are you sure you want to delete this community? It will be permanently deleted from our records  and cannot be recovered.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <section>
+                    <h1>Steps to delete your community:</h1>
+                    <ol>
+                        <li className="flex items-start gap-2">
+                            <span className="text-sm text-muted-foreground">1.</span>
+                            <p className="text-sm text-muted-foreground">
+                                <b>Verify onchain ownership.</b> This will ensure that you are the sole owner of the community.
+                                We will check this by verifying the community creator address onchain.
+                            </p>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <span className="text-sm text-muted-foreground">2.</span>
+                            <p className="text-sm text-muted-foreground">
+                                <b>Delete the community from the dashboard and communities page.</b> This will remove the community from the dashboard and make it unavailable to users.
+                            </p>
+                        </li>
+                    </ol>
+                </section>
+
+                <div className="flex justify-end gap-2">
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <Button variant={"destructive"} onClick={handleDelete} disabled={isLoading} className="capitalize">
+                        {isLoading && <Spinner />} {deleteState}
+                    </Button>
+                </div>
             </AlertDialogContent>
         </AlertDialog>
     )

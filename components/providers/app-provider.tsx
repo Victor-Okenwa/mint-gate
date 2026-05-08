@@ -51,8 +51,6 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
 
             const address = await signer?.getRecommendedAddress();
             setUserAddress(address!);
-            console.log(userAddress)
-
         }
         checkIsConnectedAndAddAddress();
     }, [signer, userAddress]);
@@ -62,7 +60,6 @@ export default function AppProvider({ children }: AppProviderProps): JSX.Element
     const value: AppContextType = {
         cccClient,
         signer,
-
         userAddress,
         setUserAddress,
         isConnected,

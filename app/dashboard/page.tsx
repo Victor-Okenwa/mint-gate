@@ -44,7 +44,7 @@ export default function DashboardPage() {
 
                 try {
                     res = await fetch(`/api/community/get-owned-communities?${params}`, {
-                        signal: controller.signal
+                        signal: controller.signal,
                     });
                 } finally {
                     clearTimeout(timeout);
