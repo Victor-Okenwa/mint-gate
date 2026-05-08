@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation"
 import { LoadingSwap } from "./ui/loading-swap"
 import { useApp } from "./providers/app-provider"
 import { Spinner } from "./ui/spinner"
+import { set } from "zod"
 
 export function CommunityCard({
     children,
@@ -186,14 +187,14 @@ export function CommunityCardDeleteButton({ className, communityId, communityNam
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { cccClient, signer, userAddress } = useApp();
-    const [deleteState, setDeleteState] = useState<'verify & delete' | 'verifying' | 'verified' | 'deleting'>("verify & delete");
+    const [deleteState, setDeleteState] = useState<'initializing' | 'verifying & deleting' | 'verify & delete'>("verify & delete");
 
     const router = useRouter();
 
     const handleDelete = useCallback(async () => {
         try {
             setIsLoading(true);
-            setDeleteState("verifying")
+            setDeleteState("initializing")
             if (!signer) {
                 toast.error("Connect wallet first");
                 return;
@@ -211,10 +212,11 @@ export function CommunityCardDeleteButton({ className, communityId, communityNam
 
             const controller = new AbortController();
             const timeout = setTimeout(() => controller.abort(), 25_000); // 25 seconds timeout
+            setDeleteState("verifying & deleting");
 
             let res;
             try {
-                res = await fetch(`/api/community/verify-community-ownership?${params}`, {
+                res = await fetch(`/api/community/delete?${params}`, {
                     signal: controller.signal,
                 });
             } finally {
@@ -223,23 +225,11 @@ export function CommunityCardDeleteButton({ className, communityId, communityNam
 
             const json = await res.json();
             if (!res.ok) throw new Error(json.error ?? "Failed to load communities");
-            console.log(json)
-            const { txHash, verified } = json;
 
-            if (!txHash) {
-                toast.error("Community not found");
-                return;
-            }
+            toast.success("Community deleted successfully")
+            router.refresh();
 
-
-            if (verified) {
-
-            } else {
-                toast.error("You were not verified as the true owner of this community");
-                return;
-            }
-
-
+            setIsOpen(false);
         } catch (error) {
             console.log(error as Error);
             toast.error((error as Error).message || "Failed to delete community, try again.");
@@ -248,14 +238,14 @@ export function CommunityCardDeleteButton({ className, communityId, communityNam
             setIsLoading(false);
             setDeleteState("verify & delete")
         }
-    }, [signer, communityId, cccClient.client]);
+    }, [signer, communityId, userAddress, router]);
 
     if (!isCreator) {
         return null;
     }
 
     return (
-        <AlertDialog>
+        <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
             <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" className={cn(className)} {...props}>
                     Delete
