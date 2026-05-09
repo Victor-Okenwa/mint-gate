@@ -12,7 +12,6 @@ import { useRouter } from "next/navigation"
 import { LoadingSwap } from "./ui/loading-swap"
 import { useApp } from "./providers/app-provider"
 import { Spinner } from "./ui/spinner"
-import { set } from "zod"
 
 export function CommunityCard({
     children,
@@ -186,7 +185,7 @@ export function CommunityCardJoinButton({ className, mintPrice, communityId, cre
 export function CommunityCardDeleteButton({ className, communityId, communityName, isCreator, ...props }: { className?: ClassValue, communityId: string, communityName: string, isCreator: boolean } & HTMLAttributes<HTMLButtonElement>) {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const { cccClient, signer, userAddress } = useApp();
+    const { signer, userAddress } = useApp();
     const [deleteState, setDeleteState] = useState<'initializing' | 'verifying & deleting' | 'verify & delete'>("verify & delete");
 
     const router = useRouter();
