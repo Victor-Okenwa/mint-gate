@@ -3,7 +3,7 @@
 import { CommunityCard, CommunityCardActions, CommunityCardDescription, CommunityCardViewButton, CommunityCardHeader, CommunityCardMemberCount, CommunityCardMintPrice, CommunityCardDeleteButton } from "@/components/community-card";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PAGE_SIZE } from "@/utils/constants";
-import { CommunityListItem } from "../api/community/get-all/route";
+import { CommunityListItem } from "../../../api/community/get-all/route";
 import { useApp } from "@/components/providers/app-provider";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
