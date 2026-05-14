@@ -188,8 +188,6 @@ export function CommunityCardDeleteButton({ className, communityId, communityNam
     const { signer, userAddress } = useApp();
     const [deleteState, setDeleteState] = useState<'initializing' | 'verifying & deleting' | 'verify & delete'>("verify & delete");
 
-    const router = useRouter();
-
     const handleDelete = useCallback(async () => {
         try {
             setIsLoading(true);
@@ -238,7 +236,7 @@ export function CommunityCardDeleteButton({ className, communityId, communityNam
             setIsLoading(false);
             setDeleteState("verify & delete")
         }
-    }, [signer, communityId, userAddress, router]);
+    }, [signer, communityId, userAddress]);
 
     if (!isCreator) {
         return null;
