@@ -289,6 +289,94 @@ export function CommunityCardDeleteButton({ className, communityId, communityNam
 }
 
 
+export function CommunityCardRetractMembershipButton({
+    isMember,
+    communityId,
+    communityName,
+    userAddress,
+    className,
+    ...props
+}: {
+    isMember: boolean,
+    communityId: string,
+    communityName: string,
+    userAddress: string,
+    className?: ClassValue
+} & HTMLAttributes<HTMLButtonElement>) {
+    const [isOpen, setIsOpen] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const [buttonLabel, setButtonLabel] = useState("Retract Membership")
+
+    const handleRetract = async () => {
+        setIsLoading(true)
+        setButtonLabel("Retracting...")
+
+        try {
+            const params = new URLSearchParams({
+                community_id: communityId,
+                user_address: userAddress,
+            })
+
+            const res = await fetch(
+                `/api/community/retract-membership?${params.toString()}`,
+                { method: "DELETE" }
+            )
+            const data = await res.json()
+
+            if (res.ok) {
+                toast.success(`Membership retracted from ${communityName}`)
+                setButtonLabel("Retracted")
+                setIsOpen(false)
+                location.reload();
+            } else {
+                toast.error(data?.error || "Failed to retract membership")
+                setButtonLabel("Try Again")
+            }
+        } catch (err: unknown) {
+            console.error(err)
+            toast.error("Failed to retract membership")
+            setButtonLabel("Try Again")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    if (!isMember) {
+        return null
+    }
+
+    return (
+        <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+            <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" className={cn(className)} {...props}>
+                    Retract Membership
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>
+                        Retract membership from {communityName}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Are you sure you want to leave <b>{communityName}</b>? You will lose access to its members-only content and privileges.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="flex justify-end gap-2 mt-4">
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <Button
+                        variant="destructive"
+                        onClick={handleRetract}
+                        disabled={isLoading}
+                    >
+                        {isLoading && <Spinner />}
+                        {buttonLabel}
+                    </Button>
+                </div>
+            </AlertDialogContent>
+        </AlertDialog>
+    )
+}
+
 
 export function CommunityCardActions({ className, children, ...props }: { className?: ClassValue, children: ReactNode } & HTMLAttributes<HTMLDivElement>) {
     return (

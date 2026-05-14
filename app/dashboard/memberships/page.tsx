@@ -1,7 +1,7 @@
 "use client";
 
 import { CommunityListItem } from "@/app/api/community/get-all/route";
-import { CommunityCard, CommunityCardActions, CommunityCardDescription, CommunityCardHeader, CommunityCardMemberCount, CommunityCardMintPrice, CommunityCardViewButton } from "@/components/community-card";
+import { CommunityCard, CommunityCardActions, CommunityCardDescription, CommunityCardHeader, CommunityCardMemberCount, CommunityCardMintPrice, CommunityCardRetractMembershipButton, CommunityCardViewButton } from "@/components/community-card";
 import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -204,6 +204,13 @@ export default function MembershipsPage() {
                                         <CommunityCardActions>
                                             <CommunityCardViewButton
                                                 href={`/community/${community.communityID}`}
+                                            />
+
+                                            <CommunityCardRetractMembershipButton
+                                                communityId={community.communityID}
+                                                communityName={community.name}
+                                                isMember={community.isMember}
+                                                userAddress={userAddress}
                                             />
 
                                         </CommunityCardActions>
