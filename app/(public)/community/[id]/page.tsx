@@ -5,9 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 import { CommunityDetail } from "@/utils/constants";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 export default function CommunityPage() {
@@ -15,9 +13,7 @@ export default function CommunityPage() {
     const [communityDetails, setCommunityDetails] = useState<CommunityDetail | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [reloadToken, setReloadToken] = useState(0);
-    const [viewSecret, setViewSecret] = useState(false);
-    const [isMember, setIsMember] = useState(false);
-
+    
     const { userAddress } = useApp();
 
     useEffect(() => {
@@ -53,7 +49,6 @@ export default function CommunityPage() {
                 if (!res.ok) throw new Error(json.error ?? "Failed to load communities");
 
                 const details = json.community as CommunityDetail;
-                setIsMember(Boolean(details?.isMember));
                 setCommunityDetails(details);
             } catch (error) {
                 setError(error instanceof Error ? error.message : "Something went wrong")
@@ -131,7 +126,7 @@ export default function CommunityPage() {
                         </hgroup>
 
 
-                        {isMember && (
+                        {/* {isMember && (
                             <div className="flex gap-2">
                                 <p className={cn("px-4 py-3 blur-sm border rounded-sm text-primary/70 pointer-events-none", {
                                     "blur-0 pointer-events-auto": viewSecret && isMember
@@ -146,15 +141,35 @@ export default function CommunityPage() {
                                 </Button>
                             </div>
 
-                        )}
+                        )} */}
 
-                        {!isMember && (
+                        {(communityDetails?.isCreator || communityDetails?.isMember) && (
+                            <div className="border border-foreground rounded-md py-2 px-3 text-foreground/70">
+                                {communityDetails.hiddenLink}
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="ml-2"
+                                    onClick={() => {
+                                        if (communityDetails.hiddenLink) {
+                                            navigator.clipboard.writeText(communityDetails.hiddenLink)
+                                        }
+                                    }}
+                                >
+                                    Copy
+                                </Button>
+
+                            </div>
+                        )
+                        }
+
+                        {!(communityDetails?.isCreator || communityDetails?.isMember) && (
                             <div>
                                 <CommunityCardJoinButton communityId={String(communityDetails?.communityID)} creatorAddress={String(communityDetails?.creatorAddress)} mintPrice={Number(communityDetails?.mintPrice)} />
                             </div>
                         )}
                     </section>
-
                 </article>
             )}
         </>

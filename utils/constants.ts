@@ -8,6 +8,7 @@ export type CommunityDetail = {
     hiddenLink: string | null;
     txHash: string | null;
     isMember: boolean;
+    isCreator: boolean;
     membersCount: number;
 };
 

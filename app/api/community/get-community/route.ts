@@ -47,7 +47,7 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: userMembershipResult.error.message }, { status: 500 });
     }
 
-    console.log(userMembershipResult)
+    const isCreator = userAddress ? community.creator_address === userAddress : false;
 
     const payload: CommunityDetail = {
         communityID: String(community.id),
@@ -61,6 +61,7 @@ export async function GET(req: Request) {
         hiddenLink: community.hidden_link ?? null,
         txHash: community.tx_hash ?? null,
         isMember: userMembershipResult.data !== null,
+        isCreator,
         membersCount: membersResult.data?.length ?? 0,
     };
 
