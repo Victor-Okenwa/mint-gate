@@ -227,7 +227,7 @@ export function CommunityCardDeleteButton({ className, communityId, communityNam
             if (!res.ok) throw new Error(json.error ?? "Failed to load communities");
 
             toast.success("Community deleted successfully")
-            router.refresh();
+            location.reload()
 
             setIsOpen(false);
         } catch (error) {
