@@ -216,6 +216,7 @@ export function CommunityCardDeleteButton({ className, communityId, communityNam
             let res;
             try {
                 res = await fetch(`/api/community/delete?${params}`, {
+                    method: "DELETE",
                     signal: controller.signal,
                 });
             } finally {

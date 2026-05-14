@@ -8,7 +8,7 @@ export async function DELETE(req: Request) {
         const { searchParams } = new URL(req.url);
         const communityId = (searchParams.get("community_id") ?? "").trim();
         const userAddress = (searchParams.get("user_address") ?? "").trim();
-
+        console.log(communityId, userAddress)
         if (!communityId || !userAddress) {
             return NextResponse.json({ error: "Invalid community id or user address" }, { status: 400 });
         }
@@ -19,7 +19,7 @@ export async function DELETE(req: Request) {
             .select("tx_hash")
             .eq("id", communityId)
             .maybeSingle();
-
+        console.log(fetchError, community)
         if (fetchError) {
             return NextResponse.json({ error: fetchError.message }, { status: 500 });
         }
