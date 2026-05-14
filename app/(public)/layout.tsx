@@ -20,10 +20,11 @@ import { WalletConnect } from "@/components/ConnectWallet";
 import { WalletConnectInfoAddress, WalletConnectInfoBalance, WalletConnectInfoContainer, WalletConnectInfoImage } from "@/components/ConnectWallet";
 
 const sidebarItems = [
-    { title: "My Communities", url: "/dashboard" },
-    { title: "My Memberships", url: "/dashboard/memberships" },
+    { title: "Home", url: "/" },
+    { title: "My Communities", url: "/my-communities" },
+    { title: "My Memberships", url: "/my-memberships" },
     { title: "Discover Communities", url: "/communities" },
-    { title: "Create Community", url: "/dashboard/create-community" },
+    { title: "Create Community", url: "/create-community" },
 ];
 
 function AppSidebar() {
