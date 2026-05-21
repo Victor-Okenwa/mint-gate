@@ -21,6 +21,7 @@ import { WalletConnectInfoAddress, WalletConnectInfoBalance, WalletConnectInfoCo
 
 const sidebarItems = [
     { title: "Home", url: "/" },
+    { title: "Search", url: "/search" },
     { title: "My Communities", url: "/my-communities" },
     { title: "My Memberships", url: "/my-memberships" },
     { title: "Discover Communities", url: "/communities" },
