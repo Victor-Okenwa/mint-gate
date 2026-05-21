@@ -2,13 +2,14 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { WalletConnect, WalletConnectButton } from "./ConnectWallet";
 import { SidebarTrigger } from "./ui/sidebar";
-import { PlusIcon, SearchIcon } from "lucide-react";
+import { PlusIcon, SearchIcon, XIcon } from "lucide-react";
 import { Form, FormControl, FormField, FormItem } from "./ui/form";
 import { Input } from "./ui/input";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
+import { useApp } from "./providers/app-provider";
 
 export const searchSchema = z.object({
     search: z.string().min(2, { message: "Search must be at least 2 characters" }),
@@ -50,6 +51,7 @@ export function Navigation({ isConnected }: { isConnected: boolean }) {
 }
 
 function SearchForm() {
+    const { userAddress } = useApp();
     const searchForm = useForm<SearchSchema>({
         resolver: zodResolver(searchSchema),
         defaultValues: {
@@ -59,8 +61,10 @@ function SearchForm() {
 
     async function handleSearch() {
         const value = searchForm.getValues("search");
+
+        const params = new URLSearchParams({ search: value.trim(), userAddress });
         if (value.trim()) {
-            window.location.href = `/search?search=${encodeURIComponent(value)}`;
+            window.location.href = `/search?${params.toString()}`;
         }
     }
 
@@ -111,6 +115,11 @@ function SearchImleplentation() {
                 <AlertDialogContent className="*:w-full">
 
                     <AlertDialogHeader>
+
+                        <AlertDialogCancel className="w-fit absolute right-5 top-0">
+                            <XIcon />
+                        </AlertDialogCancel>
+
                         <AlertDialogTitle>
                             <h3>Search</h3>
                         </AlertDialogTitle>

@@ -13,7 +13,6 @@ import {
 } from "@/components/community-card";
 import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { PAGE_SIZE } from "@/utils/constants";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -111,14 +110,6 @@ export default function SearchPage() {
         }
     }, [userAddress]);
 
-    const handleSearch = useCallback(() => {
-        if (!search.trim()) return;
-        setPage(1);
-        setInitialLoading(true);
-        setError(null);
-        fetchSearchResults(search, 1, false);
-    }, [search, fetchSearchResults]);
-
     const loadMore = useCallback(async () => {
         if (!hasMore || initialLoading || loadingMoreRef.current || !search.trim()) return;
         loadingMoreRef.current = true;
@@ -137,12 +128,16 @@ export default function SearchPage() {
 
     const handleRetryFetch = useCallback(() => {
         setError(null);
+        // Always retry with search from URL, do an initial fetch if empty, otherwise load more
         if (items.length === 0) {
-            handleSearch();
+            // Refetch the first page with the current search (from URL param)
+            setInitialLoading(true);
+            setPage(1);
+            fetchSearchResults(search, 1, false);
         } else {
             void loadMore();
         }
-    }, [items.length, loadMore, handleSearch]);
+    }, [items.length, loadMore, fetchSearchResults, search]);
 
     const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -166,24 +161,14 @@ export default function SearchPage() {
         <div className="px-4 pb-16 md:px-8">
             <section className="max-w-6xl mx-auto">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold tracking-tight mb-6">Search Communities</h1>
-                    <div className="flex gap-2">
-                        <Input
-                            type="text"
-                            placeholder="Search by community name..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                            className="flex-1"
-                        />
-                        <Button onClick={handleSearch}>Search</Button>
-                    </div>
+                    <h1 className="text-3xl font-bold tracking-tight mb-6">Search Results</h1>
+                    {/* Search form is intentionally removed */}
                 </div>
 
                 {initialLoading ? (
                     <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
                         <Spinner className="size-8" />
-                        <span className="text-sm">Searching communities…</span>
+                        <span className="text-sm">Loading search results…</span>
                     </div>
                 ) : error && items.length === 0 ? (
                     <div className="flex flex-col items-center justify-center gap-4 py-16 px-4">
