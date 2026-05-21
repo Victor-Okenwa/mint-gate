@@ -158,7 +158,7 @@ export default function SearchPage() {
     }, [loadMore, hasMore, initialLoading, loadingMore]);
 
     return (
-        <div className="px-4 pb-16 md:px-8">
+        <div className="px-4 pb-16 md:px-8 pt-10">
             <section className="max-w-6xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold tracking-tight mb-6">Search Results</h1>
