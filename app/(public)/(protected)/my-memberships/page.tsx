@@ -1,7 +1,7 @@
 "use client";
 
 import { CommunityListItem } from "@/app/api/community/get-all/route";
-import { CommunityCard, CommunityCardActions, CommunityCardDescription, CommunityCardHeader, CommunityCardMemberCount, CommunityCardMintPrice, CommunityCardRetractMembershipButton, CommunityCardViewButton } from "@/components/community-card";
+import { CommunityCard, CommunityCardActions, CommunityCardDescription, CommunityCardHeader, CommunityCardMintPrice, CommunityCardRetractMembershipButton, CommunityCardViewButton } from "@/components/community-card";
 import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 export default function MembershipsPage() {
     const [items, setItems] = useState<CommunityListItem[]>([]);
     const [page, setPage] = useState(1);
-    const [search, setSearch] = useState("");
+    const [search] = useState("");
     const [initialLoading, setInitialLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(true);

@@ -12,7 +12,7 @@ export default function DashboardPage() {
 
     const [items, setItems] = useState<CommunityListItem[]>([]);
     const [page, setPage] = useState(1);
-    const [search, setSearch] = useState("");
+    const [search] = useState("");
     const [initialLoading, setInitialLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(true);
