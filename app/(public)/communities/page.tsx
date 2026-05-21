@@ -15,10 +15,10 @@ import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { PAGE_SIZE } from "@/utils/constants";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function CommunitiesPage() {
-    const [search, setSearch] = useState("");
+    // const [search, setSearch] = useState("");
     const [items, setItems] = useState<CommunityListItem[]>([]);
     const [page, setPage] = useState(1);
     const [initialLoading, setInitialLoading] = useState(true);
@@ -26,10 +26,9 @@ export default function CommunitiesPage() {
     const [hasMore, setHasMore] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [reloadToken, setReloadToken] = useState(0);
-
     const { userAddress } = useApp();
-
     const loadingMoreRef = useRef(false);
+
 
     useEffect(() => {
         let cancelled = false;
@@ -138,40 +137,8 @@ export default function CommunitiesPage() {
         return () => obs.disconnect();
     }, [loadMore, hasMore, initialLoading]);
 
-    const filtered = useMemo(() => {
-        const q = search.trim().toLowerCase();
-        if (!q) return items;
-        return items.filter(
-            (c) =>
-                c.name.toLowerCase().includes(q) ||
-                c.description.toLowerCase().includes(q),
-        );
-    }, [items, search]);
-
     return (
         <div className="px-4 pb-16 md:px-8">
-            {/*        <div className="flex justify-center items-center sticky top-16 z-10 py-4">
-                <fieldset className="w-full max-w-md bg-background rounded-full p-2 border border-border shadow-sm flex">
-                    <InputGroup>
-                        <InputGroupInput
-                            placeholder="Search communities…"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            aria-label="Search communities"
-                            className="rounded-full!"
-                            name="search"
-                        />
-                        <InputGroupAddon>
-                            <SearchIcon className="size-4 text-muted-foreground" />
-                        </InputGroupAddon> 
-                    </InputGroup>
-
-                    <Button className="rounded-s-none rounded-e-full">
-                        <SearchIcon />
-                    </Button>
-                </fieldset>
-            </div> */}
-
             <section className="max-w-6xl mx-auto">
                 {initialLoading ? (
                     <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
@@ -210,13 +177,9 @@ export default function CommunitiesPage() {
                             <p className="text-center text-muted-foreground py-16">
                                 No communities yet.
                             </p>
-                        ) : filtered.length === 0 ? (
-                            <p className="text-center text-muted-foreground py-16">
-                                No communities match your search.
-                            </p>
                         ) : (
                             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                {filtered.map((community) => (
+                                {items.map((community) => (
                                     <CommunityCard key={community.communityID}>
                                         <CommunityCardHeader
                                             title={community.name}
@@ -224,7 +187,7 @@ export default function CommunitiesPage() {
                                             isCreator={community.isCreator}
                                         />
                                         <CommunityCardDescription description={community.description} />
-                                        <CommunityCardMemberCount count={community.membersCount} />
+                                        <CommunityCardMemberCount count={Number(community.membersCount)} />
                                         &nbsp;
                                         <CommunityCardMintPrice
                                             price={community.mintPrice}
@@ -266,7 +229,7 @@ export default function CommunitiesPage() {
                     !loadingMore &&
                     !hasMore &&
                     items.length > 0 &&
-                    (!search.trim() || filtered.length > 0) && (
+                    (items.length > 0) && (
                         <p className="text-center text-sm text-muted-foreground py-8">
                             No More Content
                         </p>
