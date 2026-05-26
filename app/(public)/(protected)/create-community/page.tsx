@@ -29,7 +29,7 @@ import { isValidHiddenLinkRawInput } from "@/lib/hidden-link";
 
 const WEBSITE_PREFIX = "https://";
 
-export const formSchema = z.object({
+const formSchema = z.object({
     name: z.string().min(1, "Community name is required"),
     description: z.string().min(1, "Description is required"),
     guidelines: z.string().optional(),
