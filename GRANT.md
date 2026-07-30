@@ -269,7 +269,7 @@ I’m newer to Web3 than many Nervos veterans, and I’m being deliberate about 
 - The MVP is live and reviewable — we’re not asking for funding from a blank repo.
 - Mentor feedback already pointed at membership Cells, indexing, and DID for harder auth features.
 - `did:ckb` tooling in CCC is maturing; Vellum is pushing identity and reputation as shared infrastructure. Mint Gate is a natural **application** consumer.
-- Getting Phase 1 right is what makes the DevRel-shaped Phase 2 (Vellum + governance) fundable and believable.
+- Getting Phase 1 right is what makes Phase 2 (Vellum + governance) fundable and believable.
 
 ---
 
@@ -281,7 +281,7 @@ I’m asking for **$8,500** to take Mint Gate from “working MVP with a soft tr
 
 The destination — **Vellum + Mint Gate + governance** — is still the plan. This grant is the ground floor.
 
-Feedback on scope and sequencing is welcome before this draft goes to a public vote. If DevRel or mentors want a thin Vellum or governance *demo* inside Phase 1, I’d rather hear that now and adjust the ask than silently overpromise.
+Feedback on scope and sequencing is welcome before this draft goes to a public vote. If DevRel r Judges want a thin Vellum or governance *demo* inside Phase 1, I’d rather hear that now and adjust the ask than silently overpromise.
 
 ---
 
