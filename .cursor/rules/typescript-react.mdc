@@ -1,0 +1,47 @@
+---
+description: TypeScript and React best practices for Mint Gate
+globs: **/*.{ts,tsx}
+alwaysApply: true
+---
+
+# TypeScript & React Best Practices
+
+Sources: [SitePoint](https://www.sitepoint.com/react-with-typescript-best-practices/), [React-Ts-Best-Practices](https://github.com/seanpmaxwell/React-Ts-Best-Practices).
+
+## Typing
+
+- **Never use `any`.** Prefer inference. If you must widen: `unknown`, then narrow. Use `never` only for exhaustiveness / impossible paths.
+- Always type component props (`interface` or `type` — be consistent in a feature). Prefer `type` for props/state unless extending a public interface.
+- Prefer TypeScript inference for hooks; use generics when initial state is `null`/`undefined` (e.g. `useState<User | null>(null)`).
+- Type DOM events correctly (`React.ChangeEvent<HTMLInputElement>`, etc.).
+- Use `||` for falsy fallbacks; use `??` only for `null`/`undefined` (do not collapse `0`, `''`, or `false` with `??` when those are valid values).
+
+```ts
+// ❌ BAD
+const n = (data as any).count || 0;
+
+// ✅ GOOD
+const n = data.count ?? 0; // keep 0 if present
+const label = name || 'Anonymous'; // treat empty string as missing
+```
+
+## Components
+
+- Prefer **function declarations** for components (hoisting, clearer stacks). Arrow functions only for inline JSX callbacks.
+- Destructure props at the top; set defaults in the destructure.
+- Break complex UI into small child components — avoid giant `return`s and temporary JSX variables.
+- Use **Container/Presenter** when a screen owns fetch/state + rich UI: container handles data/effects; presenter only renders props.
+- Use **compound components** for large interconnected features that share context and need cohesive, optimized composition (e.g. `Community.Root` / `Community.Header` / `Community.Actions`).
+- Extract static constants and pure helpers outside the component body so they are not recreated every render.
+- Keep default export at the bottom; document it with a short JSDoc (`/** Default component. … */`).
+
+## Documentation
+
+- Add JSDoc/`/** … */` on exported functions, hooks, types, and non-obvious props.
+- Comment *why* (invariants, Cell/tx choices, membership rules), not what the code already says.
+
+## Hooks & state
+
+- Few state fields → `useState`. Growing related state → one state object (or a small custom hook).
+- Shared cross-subtree state → context (or existing app provider); otherwise prop-drill.
+- Discriminated unions for reducer actions when using `useReducer`.

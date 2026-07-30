@@ -1,0 +1,26 @@
+---
+description: Workspace structure, folders, and dependency policy
+alwaysApply: true
+---
+
+# Workspace Integrity
+
+## Structure
+
+- Keep existing layout intact (`app/`, `components/`, `lib/`, `hooks/`, `utils/`, `contracts/`, etc.). Prefer domain/feature folders over dumping files at the root.
+- When adding **multiple related** components, create a dedicated folder (e.g. `components/community/` with compound parts, hooks, types) instead of scattering siblings.
+- Name files/folders after the component or domain they represent.
+- Colocate feature-only types/helpers with that feature; put shared logic in `lib/`, `utils/`, or `hooks/`.
+- Ask before inventing a new top-level directory or reshaping the tree.
+
+## Dependencies
+
+- **Do not install a dependency without asking first.**
+- When proposing a package: explain why it’s needed, what it replaces (if anything), and a lighter alternative if one exists.
+- Prefer existing stack: Next.js, CCC (`@ckb-ccc/*`), Supabase, Zod, react-hook-form, Tailwind/shadcn.
+
+## Scope discipline
+
+- Change only what the task requires. No drive-by refactors or unrelated file edits.
+- Match surrounding naming, imports, and UI patterns.
+- If requirements are ambiguous (folder placement, public API, on-chain vs off-chain), ask before coding.

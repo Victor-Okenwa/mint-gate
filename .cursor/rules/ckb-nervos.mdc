@@ -1,0 +1,25 @@
+---
+description: CKB / Nervos DAO source-of-truth and tooling defaults
+alwaysApply: true
+---
+
+# CKB / Nervos (Mint Gate DAO)
+
+Mint Gate is a DAO on Nervos CKB. Full agent instructions live in `ckbagents.md` at the project root.
+
+## Before CKB work
+
+1. Prefer official docs over memory: [docs](https://docs.nervos.org/docs), [llms.txt](https://docs.nervos.org/llms.txt), [llms-full.txt](https://docs.nervos.org/llms-full.txt), [AI Resources](https://docs.nervos.org/docs/ai-agents/ai-resource).
+2. Classify the task: **dApp (CCC)** vs **Script (on-chain)** vs **node/RPC**.
+3. Model everything as **Cells** (consume → create), not accounts. Locks spend; Types validate.
+
+## Project defaults
+
+- dApp / wallet: `@ckb-ccc/connector-react` + `@ckb-ccc/core` (existing). Prefer CCC patterns; do not invent account-model APIs.
+- Local chain: OffCKB when suitable (`ccc-client.ts` already supports `devnet` / `testnet` / `mainnet`).
+- Scripts: Rust + `ckb-std` + templates; Type ID when upgradeable; Molecule for serialization.
+- Do not guess version-sensitive RPC/SDK/VM behavior — verify in docs or LLM files first.
+
+## Hybrid app note
+
+On-chain membership/cells may pair with Supabase for indexing. Keep chain rules authoritative for spend/mint; treat DB as an index, not the source of truth for Cell state.
