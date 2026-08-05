@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable*/
 
 import { ccc } from "@ckb-ccc/connector-react";
 import { CSSProperties } from "react";

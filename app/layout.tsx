@@ -7,7 +7,8 @@ import { LayoutProvider } from "./layoutProvider";
 
 export const metadata: Metadata = {
   title: "Mint Gate",
-  description: "",
+  description:
+    "Paid, wallet-native communities on Nervos CKB. Pay a gate fee in CKB and unlock private access.",
 };
 
 export default function RootLayout({

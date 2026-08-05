@@ -15,7 +15,7 @@ import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { PAGE_SIZE } from "@/utils/constants";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, startTransition } from "react";
 
 export default function CommunitiesPage() {
     // const [search, setSearch] = useState("");
@@ -32,10 +32,12 @@ export default function CommunitiesPage() {
 
     useEffect(() => {
         let cancelled = false;
-        setInitialLoading(true);
-        setError(null);
-        setPage(1);
-        setHasMore(true);
+        startTransition(() => {
+            setInitialLoading(true);
+            setError(null);
+            setPage(1);
+            setHasMore(true);
+        });
         (async () => {
             try {
                 const params = new URLSearchParams({

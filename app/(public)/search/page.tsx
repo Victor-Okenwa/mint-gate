@@ -15,7 +15,7 @@ import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { PAGE_SIZE } from "@/utils/constants";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, startTransition } from "react";
 
 export default function SearchPage() {
     const [search, setSearch] = useState("");
@@ -34,10 +34,12 @@ export default function SearchPage() {
         const params = new URLSearchParams(window.location.search);
         const searchParam = params.get("search") ?? "";
         if (searchParam.trim()) {
-            setInitialSearch(searchParam);
-            setSearch(searchParam);
-            setInitialLoading(true);
-            setError(null);
+            startTransition(() => {
+                setInitialSearch(searchParam);
+                setSearch(searchParam);
+                setInitialLoading(true);
+                setError(null);
+            });
 
             const fetchParams = new URLSearchParams({
                 search: searchParam,

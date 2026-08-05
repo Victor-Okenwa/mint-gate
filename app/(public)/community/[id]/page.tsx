@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CommunityDetail } from "@/utils/constants";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, startTransition } from "react";
 
 export default function CommunityPage() {
     const [isLoading, setIsLoading] = useState(false);
@@ -17,8 +17,10 @@ export default function CommunityPage() {
     const { userAddress } = useApp();
 
     useEffect(() => {
-        setIsLoading(true)
-        setError(null)
+        startTransition(() => {
+            setIsLoading(true)
+            setError(null)
+        })
         const pathSplit = location.pathname.split("/")
         const id = pathSplit[pathSplit.length - 1];
 
@@ -128,7 +130,7 @@ export default function CommunityPage() {
 
                         {/* {isMember && (
                             <div className="flex gap-2">
-                                <p className={cn("px-4 py-3 blur-sm border rounded-sm text-primary/70 pointer-events-none", {
+                                <p className={cn("px-4 py-3 blur-xs border rounded-sm text-primary/70 pointer-events-none", {
                                     "blur-0 pointer-events-auto": viewSecret && isMember
                                 })}>{communityDetails?.hiddenLink}</p>
                                 <Button variant={"outline"} onClick={() => setViewSecret((prev) => !prev)} className="h-auto" disabled={!isMember}>

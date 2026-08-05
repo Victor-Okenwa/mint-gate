@@ -6,7 +6,7 @@ import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { PAGE_SIZE } from "@/utils/constants";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, startTransition } from "react";
 
 export default function MembershipsPage() {
     const [items, setItems] = useState<CommunityListItem[]>([]);
@@ -24,10 +24,12 @@ export default function MembershipsPage() {
 
     useEffect(() => {
         let cancelled = false;
-        setInitialLoading(true);
-        setError(null);
-        setPage(1);
-        setHasMore(true);
+        startTransition(() => {
+            setInitialLoading(true);
+            setError(null);
+            setPage(1);
+            setHasMore(true);
+        });
 
         (async () => {
             try {

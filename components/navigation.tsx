@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { WalletConnect, WalletConnectButton } from "./ConnectWallet";
 import { SidebarTrigger } from "./ui/sidebar";
@@ -22,13 +23,8 @@ type SearchSchema = z.infer<typeof searchSchema>;
  * @returns React.ReactNode
  */
 export function Navigation({ isConnected }: { isConnected: boolean }) {
-
-
-
-
-
     return (
-        <nav className="sticky top-0 flex bg-background/80 backdrop-blur-md items-center justify-between px-8 py-6 border-b border-border w-full" >
+        <nav className="sticky top-0 flex bg-background/80 backdrop-blur-md items-center justify-between px-8 py-6 border-b border-border w-full z-50" >
             {isConnected ? (
                 <SidebarTrigger />
             ) : (
@@ -39,11 +35,11 @@ export function Navigation({ isConnected }: { isConnected: boolean }) {
 
             {isConnected ? (
                 <div className="flex items-center gap-2">
-                    <Button asChild><Link href="/create-community" className="rounded-none"> <PlusIcon /> <span className="max-sm:hidden">Create</span> </Link></Button>
+                    <Button asChild><Link href="/create-community" className="rounded-none h-10"> <PlusIcon /> <span className="max-sm:hidden">Create</span> </Link></Button>
                 </div>
             ) : (
                 <WalletConnect>
-                    <WalletConnectButton />
+                    <WalletConnectButton size="lg" className="text-sm! rounded-none h-10" />
                 </WalletConnect>
             )}
         </nav >
@@ -51,6 +47,7 @@ export function Navigation({ isConnected }: { isConnected: boolean }) {
 }
 
 function SearchForm() {
+    const router = useRouter();
     const { userAddress } = useApp();
     const searchForm = useForm<SearchSchema>({
         resolver: zodResolver(searchSchema),
@@ -64,7 +61,7 @@ function SearchForm() {
 
         const params = new URLSearchParams({ search: value.trim(), userAddress });
         if (value.trim()) {
-            window.location.href = `/search?${params.toString()}`;
+            router.push(`/search?${params.toString()}`);
         }
     }
 
@@ -79,7 +76,7 @@ function SearchForm() {
                             <FormControl>
                                 <Input
                                     placeholder="Search for communities"
-                                    className="bg-secondary border-border outline-none! rounded-e-none rounded-s-none"
+                                    className="bg-secondary border-border outline-hidden! rounded-e-none rounded-s-none"
                                     {...field}
                                 />
                             </FormControl>

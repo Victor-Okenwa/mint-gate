@@ -71,16 +71,18 @@ export function WalletConnect({ children }: { children: React.ReactNode }) {
 }
 
 export function WalletConnectButton({
-  className = ""
+  className = "",
+  size = "md"
 }: {
   className?: ClassValue
+  size?: "sm" | "md" | "lg"
 }) {
   const { open, wallet } = useWalletConnect();
 
   if (wallet) return null;
 
   return (
-    <button className={cn("cursor-pointer rounded-full border border-solid border-transparent transition-colors flex items-center justify-center gap-2 bg-black dark:bg-white text-white dark:text-black hover:opacity-90  text-sm sm:text-base font-bold  px-5 py-3", className)}
+    <button className={cn("cursor-pointer rounded-full border border-solid border-transparent transition-colors flex items-center justify-center gap-2 bg-black dark:bg-white text-white dark:text-black hover:opacity-90  text-sm sm:text-base font-bold  px-5 py-3", className, size === "sm" && "text-sm", size === "md" && "text-base", size === "lg" && "text-lg")}
       onClick={open}
     >
       Connect Wallet

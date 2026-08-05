@@ -1,7 +1,7 @@
 "use client";
 
 import { CommunityCard, CommunityCardActions, CommunityCardDescription, CommunityCardViewButton, CommunityCardHeader, CommunityCardMemberCount, CommunityCardMintPrice, CommunityCardDeleteButton } from "@/components/community-card";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, startTransition } from "react";
 import { PAGE_SIZE } from "@/utils/constants";
 import { CommunityListItem } from "../../../api/community/get-all/route";
 import { useApp } from "@/components/providers/app-provider";
@@ -25,10 +25,12 @@ export default function DashboardPage() {
 
     useEffect(() => {
         let cancelled = false;
-        setInitialLoading(true);
-        setError(null);
-        setPage(1);
-        setHasMore(true);
+        startTransition(() => {
+            setInitialLoading(true);
+            setError(null);
+            setPage(1);
+            setHasMore(true);
+        });
 
         (async () => {
             try {
