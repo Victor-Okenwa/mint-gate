@@ -34,10 +34,21 @@ export function utf8ToHex(utf8String: string): string {
     );
 }
 
+/**
+ * Decode a `0x`-prefixed (or raw) hex string to UTF-8 text.
+ * Used for community / membership Cell `output_data` round-trips.
+ */
 export function hexToUtf8(hexString: string): string {
-    const decoder = new TextDecoder("utf-8");
-    const uint8Array = new Uint8Array(
-        hexString.match(/[\da-f]{2}/gi)!.map((h) => parseInt(h, 16))
-    );
-    return decoder.decode(uint8Array);
+    const normalized = hexString.trim().replace(/^0x/i, "");
+    if (normalized.length === 0 || normalized.length % 2 !== 0) {
+        throw new Error("hexToUtf8: expected even-length hex string");
+    }
+    if (!/^[0-9a-fA-F]+$/.test(normalized)) {
+        throw new Error("hexToUtf8: invalid hex characters");
+    }
+    const bytes = new Uint8Array(normalized.length / 2);
+    for (let i = 0; i < normalized.length; i += 2) {
+        bytes[i / 2] = Number.parseInt(normalized.slice(i, i + 2), 16);
+    }
+    return new TextDecoder("utf-8").decode(bytes);
 }
