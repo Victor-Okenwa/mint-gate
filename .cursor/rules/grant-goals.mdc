@@ -1,0 +1,30 @@
+---
+description: Follow grant-goals.md build order; confirm before next goal; ask to remove rule when done
+alwaysApply: true
+---
+
+# Grant goals (temporary)
+
+While implementing grant-friendly / Phase 1 work for Mint Gate:
+
+1. **Read and follow** [`grant-goals.md`](../../grant-goals.md) at the project root. Prefer its pillars, **build order**, and checkboxes over ad-hoc scope.
+2. **Follow the build order** in `grant-goals.md` (Pillar A → C → B → D, with noted overlaps). Work on **one goal at a time** (e.g. A1, then A2). Do not skip ahead or start the next goal unprompted.
+3. When starting or continuing work, open `grant-goals.md`, find the current goal, and implement against its “How to achieve it” and “Done when” items.
+4. Do not expand into deferred Phase 2 items (Vellum reputation, mini-DAO governance, marketplace, etc.) unless the user explicitly asks.
+
+## Completing a goal
+
+When you believe a goal is finished:
+
+1. **Ask the user to confirm** the goal is complete. Do not mark it done yourself until they confirm.
+2. After they confirm, check the **goal-level checkbox** and any finished “Done when” / task checkboxes in `grant-goals.md`, and refresh the progress snapshot if needed.
+3. **Ask before moving to the next goal** (or next pillar). Wait for explicit go-ahead.
+
+## When all grant goals are done
+
+When the goals in `grant-goals.md` are substantially complete (or the user says Phase 1 grant work is finished):
+
+- **Ask the user** whether to remove this rule file (`.cursor/rules/grant-goals.mdc`).
+- Do not delete the rule until they confirm.
+
+This rule is temporary scaffolding for grant implementation — not a permanent project convention.

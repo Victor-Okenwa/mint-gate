@@ -2,23 +2,49 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-ccc-a
 
 ## Getting Started
 
-First, run the development server:
+### Local database (Docker + Drizzle)
+
+Community data uses **Postgres via Drizzle** in Next.js API routes only (no browser DB client). Local DB is a small `postgres:16-alpine` container (`docker-compose.yml`), not the full Supabase CLI stack.
+
+1. Start Docker Desktop / Engine (WSL2-compatible).
+2. Start Postgres:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm db:start
+```
+
+3. Copy env if needed (`DATABASE_URL` should match Compose):
+
+```bash
+cp .env.example .env.local
+# DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+```
+
+4. Apply schema migrations, then run the app:
+
+```bash
+pnpm drizzle:migrate
 pnpm dev
-# or
-bun dev
+```
+
+Useful commands:
+
+- `pnpm db:stop` / `pnpm db:status` — stop or inspect the container
+- `pnpm drizzle:generate` — generate SQL from `lib/db/schema.ts`
+- `pnpm drizzle:migrate` — apply migrations
+- `pnpm drizzle:studio` — Drizzle Studio UI ([https://local.drizzle.studio](https://local.drizzle.studio))
+
+Production uses the same Drizzle schema against hosted Supabase Postgres (`DATABASE_URL`).
+
+If you previously ran `supabase start`, you can reclaim disk with `pnpm db:stop` (Compose) and Docker prune of unused Supabase images/volumes when you no longer need them.
+
+### Dev server
+
+```bash
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
 

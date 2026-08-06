@@ -1,67 +1,63 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
+
 import { isValidStoredHiddenLink } from "@/lib/hidden-link";
-import { supabaseAdmin } from "@/lib/superbase/server";
+import { db } from "@/lib/db";
+import { communities } from "@/lib/db/schema";
 
 export async function POST(req: Request) {
-    try {
-        const body = await req.json();
+  try {
+    const body = await req.json();
 
-        const {
-            id,
-            name,
-            description,
-            guidelines, // frontend should pass an array or newline string
-            mint_price,
-            hidden_link,
-            creator_address,
-            tx_hash,
-        } = body;
+    const {
+      id,
+      name,
+      description,
+      guidelines,
+      mint_price,
+      hidden_link,
+      creator_address,
+      tx_hash,
+    } = body;
 
-        // console.log("body", { name, description, guidelines, mint_price, creator_address, id, typeScript, txHash });
+    const guidelinesArray =
+      typeof guidelines === "string"
+        ? guidelines
+            .split("\n")
+            .map((s: string) => s.trim())
+            .filter(Boolean)
+        : Array.isArray(guidelines)
+          ? guidelines
+          : [];
 
-        const guidelinesArray =
-            typeof guidelines === "string"
-                ? guidelines.split("\n").map((s: string) => s.trim()).filter(Boolean)
-                : Array.isArray(guidelines)
-                    ? guidelines
-                    : [];
-
-        if (hidden_link != null && typeof hidden_link !== "string") {
-            return NextResponse.json({ error: "Invalid hidden link URL" }, { status: 400 });
-        }
-        if (typeof hidden_link === "string" && !isValidStoredHiddenLink(hidden_link)) {
-            return NextResponse.json({ error: "Invalid hidden link URL" }, { status: 400 });
-        }
-
-        const insertRow = {
-            id,
-            name,
-            description,
-            guidelines: guidelinesArray,
-            mint_price: Number(mint_price ?? 0),
-            hidden_link,
-            creator_address,
-            tx_hash,
-        };
-
-        console.log("insertRow", insertRow);
-
-        const { data, error } = await supabaseAdmin
-            .from("communities")
-            .insert([insertRow])
-            .select()
-            .single();
-
-        if (error) {
-            console.error("Supabase insert error:", error);
-            return NextResponse.json({ error: (error as Error).message ?? "Server error" }, { status: 500 });
-        }
-
-        return NextResponse.json({
-            community: data,
-        });
-    } catch (err) {
-        console.error("Create route error:", err);
-        return NextResponse.json({ error: (err as Error).message ?? "Server call failed" }, { status: 500 });
+    if (hidden_link != null && typeof hidden_link !== "string") {
+      return NextResponse.json({ error: "Invalid hidden link URL" }, { status: 400 });
     }
+    if (typeof hidden_link === "string" && !isValidStoredHiddenLink(hidden_link)) {
+      return NextResponse.json({ error: "Invalid hidden link URL" }, { status: 400 });
+    }
+
+    const [data] = await db
+      .insert(communities)
+      .values({
+        id,
+        name,
+        description: description ?? "",
+        guidelines: guidelinesArray,
+        mintPrice: String(Number(mint_price ?? 0)),
+        hiddenLink: hidden_link ?? null,
+        creatorAddress: creator_address,
+        txHash: tx_hash ?? null,
+      })
+      .returning();
+
+    return NextResponse.json({
+      community: data,
+    });
+  } catch (err) {
+    console.error("Create route error:", err);
+    return NextResponse.json(
+      { error: (err as Error).message ?? "Server call failed" },
+      { status: 500 },
+    );
+  }
 }

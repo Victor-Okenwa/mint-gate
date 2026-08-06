@@ -1,69 +1,71 @@
-import { supabaseAdmin } from "@/lib/superbase/server";
+import { db } from "@/lib/db";
+import { communities, members } from "@/lib/db/schema";
 import { CommunityDetail } from "@/utils/constants";
+import { and, count, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
+  try {
     const { searchParams } = new URL(req.url);
     const communityId = (searchParams.get("community_id") ?? "").trim();
     const userAddress = (searchParams.get("user_address") ?? "").trim();
 
     if (!communityId) {
-        return NextResponse.json({ error: "community_id is required" }, { status: 400 });
+      return NextResponse.json({ error: "community_id is required" }, { status: 400 });
     }
 
-    const { data: community, error: communityError } = await supabaseAdmin
-        .from("communities")
-        .select("id, name, description, guidelines, mint_price, creator_address, hidden_link, tx_hash")
-        .eq("id", communityId)
-        .single();
+    const [community] = await db
+      .select()
+      .from(communities)
+      .where(eq(communities.id, communityId))
+      .limit(1);
 
-    if (communityError) {
-        if (communityError.code === "PGRST116") {
-            return NextResponse.json({ error: "Community not found" }, { status: 404 });
-        }
-        console.error("getCommunity:", communityError);
-        return NextResponse.json({ error: communityError.message }, { status: 500 });
+    if (!community) {
+      return NextResponse.json({ error: "Community not found" }, { status: 404 });
     }
 
-    const [membersResult, userMembershipResult] = await Promise.all([
-        supabaseAdmin.from("members").select("community_id").eq("community_id", communityId),
-        userAddress
-            ? supabaseAdmin
-                .from("members")
-                .select("id")
-                .eq("community_id", communityId)
-                .eq("user_address", userAddress)
-                .maybeSingle()
-            : Promise.resolve({ data: null as { id: string } | null, error: null }),
+    const [[{ total: membersCount }], membership] = await Promise.all([
+      db
+        .select({ total: count() })
+        .from(members)
+        .where(eq(members.communityId, communityId)),
+      userAddress
+        ? db
+            .select({ id: members.id })
+            .from(members)
+            .where(
+              and(
+                eq(members.communityId, communityId),
+                eq(members.userAddress, userAddress),
+              ),
+            )
+            .limit(1)
+            .then((rows) => rows[0] ?? null)
+        : Promise.resolve(null),
     ]);
 
-    if (membersResult.error) {
-        console.error("getCommunity members count:", membersResult.error);
-        return NextResponse.json({ error: membersResult.error.message }, { status: 500 });
-    }
-
-    if (userMembershipResult.error) {
-        console.error("getCommunity membership:", userMembershipResult.error);
-        return NextResponse.json({ error: userMembershipResult.error.message }, { status: 500 });
-    }
-
-    const isCreator = userAddress ? community.creator_address === userAddress : false;
-
     const payload: CommunityDetail = {
-        communityID: String(community.id),
-        name: community.name ?? "",
-        description: community.description ?? "",
-        guidelines: Array.isArray(community.guidelines)
-            ? community.guidelines.map((item) => String(item))
-            : [],
-        mintPrice: Number(community.mint_price ?? 0),
-        creatorAddress: community.creator_address ?? "",
-        hiddenLink: community.hidden_link ?? null,
-        txHash: community.tx_hash ?? null,
-        isMember: userMembershipResult.data !== null,
-        isCreator,
-        membersCount: membersResult.data?.length ?? 0,
+      communityID: String(community.id),
+      name: community.name ?? "",
+      description: community.description ?? "",
+      guidelines: Array.isArray(community.guidelines)
+        ? community.guidelines.map((item) => String(item))
+        : [],
+      mintPrice: Number(community.mintPrice ?? 0),
+      creatorAddress: community.creatorAddress ?? "",
+      hiddenLink: community.hiddenLink ?? null,
+      txHash: community.txHash ?? null,
+      isMember: membership !== null,
+      isCreator: userAddress ? community.creatorAddress === userAddress : false,
+      membersCount: Number(membersCount ?? 0),
     };
 
     return NextResponse.json({ community: payload });
+  } catch (error) {
+    console.error("getCommunity:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Server error" },
+      { status: 500 },
+    );
+  }
 }
