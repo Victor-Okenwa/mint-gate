@@ -4,7 +4,8 @@
 //! deployed — wallets and docs may reference them.
 
 /// Script-level errors for mint / burn / transfer rules.
-#[repr(i8)]z
+#[repr(i8)]
+
 pub enum Error {
     /// Syscall or index failure while loading cells.
     IndexError = 1,
