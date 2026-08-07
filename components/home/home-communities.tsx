@@ -112,6 +112,7 @@ export function HomeCommunities() {
                         mintPrice={community.mintPrice}
                         communityId={community.communityID}
                         creatorAddress={community.creatorAddress}
+                        communityTxHash={community.txHash}
                       />
                     )}
                   </CommunityCardActions>

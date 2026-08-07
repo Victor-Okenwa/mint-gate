@@ -6,7 +6,6 @@ import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import Link from "next/link"
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog"
-import { ccc } from "@ckb-ccc/connector-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { LoadingSwap } from "./ui/loading-swap"
@@ -73,7 +72,21 @@ export function CommunityCardViewButton({ className, href, ...props }: { classNa
     )
 }
 
-export function CommunityCardJoinButton({ className, mintPrice, communityId, creatorAddress, ...props }: { className?: ClassValue, mintPrice: number, communityId: string, creatorAddress: string } & HTMLAttributes<HTMLButtonElement>) {
+export function CommunityCardJoinButton({
+    className,
+    mintPrice,
+    communityId,
+    creatorAddress,
+    communityTxHash,
+    ...props
+}: {
+    className?: ClassValue
+    mintPrice: number
+    communityId: string
+    creatorAddress: string
+    /** Create-community tx hash (community Cell outPoint). Fetched if omitted. */
+    communityTxHash?: string | null
+} & HTMLAttributes<HTMLButtonElement>) {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { cccClient, signer, userAddress } = useApp();
@@ -81,7 +94,6 @@ export function CommunityCardJoinButton({ className, mintPrice, communityId, cre
     const router = useRouter();
 
     const handleJoin = useCallback(async () => {
-
         try {
             setIsLoading(true);
             if (!signer) {
@@ -99,27 +111,41 @@ export function CommunityCardJoinButton({ className, mintPrice, communityId, cre
                 return;
             }
 
-            const { script: toLock } = await ccc.Address.fromString(creatorAddress, cccClient.client);
-
-            const tx = ccc.Transaction.from({
-                outputs: [{ lock: toLock }],
-                outputsData: [],
-            });
-
-            tx.outputs.forEach((output, i) => {
-                if (output.capacity > ccc.fixedPointFrom(mintPrice)) {
-                    toast.error(`Insufficient balance: ${output.capacity} < ${mintPrice} CKB at ${i}`);
+            let resolvedTxHash = communityTxHash?.trim() || "";
+            if (!resolvedTxHash) {
+                const params = new URLSearchParams({ community_id: communityId });
+                const res = await fetch(`/api/community/get-community?${params}`);
+                if (!res.ok) {
+                    toast.error("Could not load community on-chain tx hash");
                     return;
                 }
+                const json = await res.json();
+                resolvedTxHash = String(
+                    json?.community?.txHash ?? json?.txHash ?? "",
+                ).trim();
+            }
 
-                output.capacity = ccc.fixedPointFrom(mintPrice);
+            if (!resolvedTxHash) {
+                toast.error(
+                    "This community has no on-chain create tx — recreate it after the A1 create flow.",
+                );
+                return;
+            }
+
+            const { buildJoinMembershipTransaction } = await import(
+                "@/lib/ckb/membership"
+            );
+
+            const { tx } = await buildJoinMembershipTransaction({
+                signer,
+                client: cccClient.client,
+                communityId,
+                creatorAddress,
+                mintPriceCkb: mintPrice,
+                communityTxHash: resolvedTxHash,
             });
 
-            // Complete missing parts for transaction
-            await tx.completeInputsByCapacity(signer!);
-            await tx.completeFeeBy(signer!, 1000);
-
-            const txHash = await signer?.sendTransaction(tx);
+            const txHash = await signer.sendTransaction(tx);
 
             if (!txHash) {
                 toast.error("Failed to join community, try again.");
@@ -155,7 +181,16 @@ export function CommunityCardJoinButton({ className, mintPrice, communityId, cre
         } finally {
             setIsLoading(false);
         }
-    }, [signer, creatorAddress, communityId, cccClient.client, userAddress, router, mintPrice]);
+    }, [
+        signer,
+        creatorAddress,
+        communityId,
+        communityTxHash,
+        cccClient.client,
+        userAddress,
+        router,
+        mintPrice,
+    ]);
 
     return (
         <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
@@ -169,7 +204,8 @@ export function CommunityCardJoinButton({ className, mintPrice, communityId, cre
                     <AlertDialogTitle>Join the community</AlertDialogTitle>
                 </AlertDialogHeader>
                 <AlertDialogDescription>
-                    Joining this community will cost you {mintPrice} CKB.
+                    Joining mints an on-chain membership Cell and pays {mintPrice} CKB
+                    to the creator (plus a small network fee).
                 </AlertDialogDescription>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>

@@ -31,6 +31,16 @@ import { useRouter } from "next/navigation";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { isValidHiddenLinkRawInput } from "@/lib/hidden-link";
+import {
+    AlertDialog,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { LoadingSwap } from "@/components/ui/loading-swap";
 
 const WEBSITE_PREFIX = "https://";
 
@@ -54,9 +64,21 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+type DeployCostEstimate = {
+    cellCapacityCkb: string;
+    feeBufferCkb: number;
+    totalCkb: string;
+    balanceCkb: string;
+    hasEnough: boolean;
+};
+
 export default function CreateCommunityPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeploying, setIsDeploying] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [pendingValues, setPendingValues] = useState<FormValues | null>(null);
+    const [costEstimate, setCostEstimate] = useState<DeployCostEstimate | null>(null);
+    const [isEstimating, setIsEstimating] = useState(false);
     const router = useRouter();
     const signer = ccc.useSigner();
 
@@ -70,9 +92,60 @@ export default function CreateCommunityPage() {
         },
     });
 
-    async function handleSubmit(values: FormValues) {
+    /** Validate form, compute on-chain cost, open confirmation dialog. */
+    async function handleRequestDeploy(values: FormValues) {
+        setIsEstimating(true);
+        try {
+            if (!signer) {
+                toast.error("Connect wallet first");
+                return;
+            }
+
+            const balance = await signer.getBalance();
+            const addressObj = await signer.getRecommendedAddressObj();
+            if (!addressObj) {
+                toast.error("Wallet not ready");
+                return;
+            }
+
+            // Capacity depends on on-chain JSON size (id + lock hash + mint price).
+            const previewId = "00000000-0000-4000-8000-000000000000";
+            const communityCellData = buildCommunityCellData({
+                communityId: previewId,
+                creatorLockHash: addressObj.script.hash(),
+                mintPriceCkb: values.mintPrice,
+            });
+            const dataHex = encodeCommunityCellData(communityCellData);
+            const cellCapacity = computeCommunityCellCapacityShannons(
+                addressObj.script,
+                dataHex,
+            );
+            const feeBuffer = ccc.fixedPointFrom(CREATE_FEE_BUFFER_CKB);
+            const total = cellCapacity + feeBuffer;
+
+            setCostEstimate({
+                cellCapacityCkb: ccc.fixedPointToString(cellCapacity),
+                feeBufferCkb: CREATE_FEE_BUFFER_CKB,
+                totalCkb: ccc.fixedPointToString(total),
+                balanceCkb: ccc.fixedPointToString(balance),
+                hasEnough: balance >= total,
+            });
+            setPendingValues(values);
+            setConfirmOpen(true);
+        } catch (error: unknown) {
+            console.error("handleRequestDeploy error:", error);
+            toast.error((error as Error)?.message ?? "Could not estimate deploy cost");
+        } finally {
+            setIsEstimating(false);
+        }
+    }
+
+    async function handleConfirmDeploy() {
+        if (!pendingValues) return;
+
         setIsSubmitting(true);
         const communityId = generateCommunityId();
+        const values = pendingValues;
 
         try {
             if (!signer) {
@@ -81,10 +154,10 @@ export default function CreateCommunityPage() {
             }
 
             const balance = await signer.getBalance();
-            const creatorAddress = await signer?.getRecommendedAddress();
+            const creatorAddress = await signer.getRecommendedAddress();
             const addressObj = await signer.getRecommendedAddressObj();
 
-            if (!balance || !addressObj) {
+            if (!addressObj) {
                 toast.error("Wallet not ready");
                 return;
             }
@@ -103,7 +176,6 @@ export default function CreateCommunityPage() {
             });
             const dataHex = encodeCommunityCellData(communityCellData);
 
-            /** Occupied capacity from lock + data size (not a fixed 301 CKB). */
             const cellCapacity = computeCommunityCellCapacityShannons(
                 addressObj.script,
                 dataHex,
@@ -140,7 +212,7 @@ export default function CreateCommunityPage() {
             });
 
             setIsDeploying(true);
-
+            setConfirmOpen(false);
 
             const response = await fetch("/api/community/create", {
                 method: "POST",
@@ -163,14 +235,13 @@ export default function CreateCommunityPage() {
             toast.success("Community created successfully 🚀");
             router.push(`/community/${communityId}`);
         } catch (error: unknown) {
-            console.error("handleSubmit error:", error);
+            console.error("handleConfirmDeploy error:", error);
             const msg = (error as Error)?.message ?? String(error);
             if (msg.toLowerCase().includes("capacity") || msg.toLowerCase().includes("insufficient")) {
                 toast.error(
                     "Insufficient CKB balance for cell capacity plus network fees.",
                 );
             } else {
-                // show the raw message to help debugging
                 toast.error(msg);
             }
         } finally {
@@ -188,7 +259,11 @@ export default function CreateCommunityPage() {
             </p>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" method="post">
+                <form
+                    onSubmit={form.handleSubmit(handleRequestDeploy)}
+                    className="space-y-6"
+                    method="post"
+                >
                     <FormField
                         control={form.control}
                         name="name"
@@ -309,9 +384,7 @@ export default function CreateCommunityPage() {
                     <div className="text-xs text-muted-foreground flex items-start gap-2 mt-4">
                         <InfoIcon className="size-4 shrink-0 mt-0.5" />
                         <span>
-                            On-chain cost is the community Cell&apos;s{" "}
-                            <strong>occupied capacity</strong> (sized from lock + stored data)
-                            plus network fees.
+                            You&apos;ll see the exact on-chain capacity cost before confirming deploy.
                         </span>
                     </div>
 
@@ -319,12 +392,12 @@ export default function CreateCommunityPage() {
                         type="submit"
                         size="lg"
                         className="w-full mt-4"
-                        disabled={isSubmitting}
+                        disabled={isEstimating || isSubmitting}
                     >
-                        {isSubmitting ? (
+                        {isEstimating ? (
                             <>
                                 <Spinner className="size-5" />
-                                {isDeploying ? "Deploying…" : "Signing Transaction…"}
+                                Calculating cost…
                             </>
                         ) : (
                             "Deploy On-Chain"
@@ -332,6 +405,84 @@ export default function CreateCommunityPage() {
                     </Button>
                 </form>
             </Form>
+
+            <AlertDialog
+                open={confirmOpen}
+                onOpenChange={(open) => {
+                    if (isSubmitting) return;
+                    setConfirmOpen(open);
+                    if (!open) {
+                        setPendingValues(null);
+                        setCostEstimate(null);
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm on-chain deploy</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Review how much CKB will be locked to store this community Cell
+                            on Nervos CKB. Capacity stays in a Cell you control and can be
+                            reclaimed if you spend that Cell later.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+
+                    {costEstimate && (
+                        <dl className="space-y-3 rounded-md border border-border bg-secondary/40 px-4 py-3 text-sm">
+                            <div className="flex items-baseline justify-between gap-4">
+                                <dt className="text-muted-foreground">Cell capacity</dt>
+                                <dd className="font-medium tabular-nums">
+                                    {costEstimate.cellCapacityCkb} CKB
+                                </dd>
+                            </div>
+                            <div className="flex items-baseline justify-between gap-4">
+                                <dt className="text-muted-foreground">
+                                    Network fee buffer (est.)
+                                </dt>
+                                <dd className="font-medium tabular-nums">
+                                    ~{costEstimate.feeBufferCkb} CKB
+                                </dd>
+                            </div>
+                            <div className="flex items-baseline justify-between gap-4 border-t border-border pt-3">
+                                <dt className="font-medium">You need about</dt>
+                                <dd className="font-semibold tabular-nums">
+                                    {costEstimate.totalCkb} CKB
+                                </dd>
+                            </div>
+                            <div className="flex items-baseline justify-between gap-4">
+                                <dt className="text-muted-foreground">Wallet balance</dt>
+                                <dd
+                                    className={`tabular-nums ${
+                                        costEstimate.hasEnough
+                                            ? "text-muted-foreground"
+                                            : "text-destructive font-medium"
+                                    }`}
+                                >
+                                    {costEstimate.balanceCkb} CKB
+                                </dd>
+                            </div>
+                        </dl>
+                    )}
+
+                    {!costEstimate?.hasEnough && (
+                        <p className="text-sm text-destructive">
+                            Balance is too low for this deploy. Add CKB and try again.
+                        </p>
+                    )}
+
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
+                        <Button
+                            onClick={handleConfirmDeploy}
+                            disabled={isSubmitting || !costEstimate?.hasEnough}
+                        >
+                            <LoadingSwap isLoading={isSubmitting}>
+                                {isDeploying ? "Saving…" : "Confirm & sign"}
+                            </LoadingSwap>
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

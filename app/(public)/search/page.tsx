@@ -229,6 +229,7 @@ export default function SearchPage() {
                                                 mintPrice={community.mintPrice}
                                                 creatorAddress={community.creatorAddress}
                                                 communityId={community.communityID}
+                                                communityTxHash={community.txHash}
                                             />
                                         )}
                                     </CommunityCardActions>

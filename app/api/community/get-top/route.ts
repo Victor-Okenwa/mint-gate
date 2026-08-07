@@ -28,6 +28,7 @@ export async function GET(req: Request) {
           description: communities.description,
           mintPrice: communities.mintPrice,
           creatorAddress: communities.creatorAddress,
+          txHash: communities.txHash,
         })
         .from(communities),
     ]);
@@ -59,6 +60,7 @@ export async function GET(req: Request) {
         description: row.description ?? "",
         mintPrice: Number(row.mintPrice ?? 0),
         creatorAddress: row.creatorAddress ?? "",
+        txHash: row.txHash ?? undefined,
         isCreator: Boolean(userAddress) && row.creatorAddress === userAddress,
         isMember: membershipIds.has(id),
         membersCount: membersCountByCommunity.get(id) ?? 0,

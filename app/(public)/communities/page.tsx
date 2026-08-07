@@ -205,6 +205,7 @@ export default function CommunitiesPage() {
                                                     mintPrice={community.mintPrice}
                                                     creatorAddress={community.creatorAddress}
                                                     communityId={community.communityID}
+                                                    communityTxHash={community.txHash}
                                                 />
                                             )}
 

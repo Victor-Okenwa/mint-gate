@@ -6,7 +6,7 @@
  * (Part 5). See `docs/MEMBERSHIP_DEPLOY.md`.
  */
 
-import type { CellDepLike, Hex, Script } from "@ckb-ccc/core";
+import type { CellDepLike, Hex, ScriptLike } from "@ckb-ccc/core";
 import {
   MEMBERSHIP_CAPACITY_CKB,
   MEMBERSHIP_CODE_HASH,
@@ -24,7 +24,7 @@ export type MembershipScriptInfo = {
   hashType: "type" | "data" | "data1" | "data2";
   /** CellDep pointing at the live code Cell on the target network. */
   cellDep: CellDepLike;
-  /** Suggested capacity (CKB) for a new membership Cell before exact occupied calc. */
+  /** Env ballpark (CKB); join prefers occupied capacity from CellOutput.from. */
   defaultCapacityCkb: number;
 };
 
@@ -81,7 +81,7 @@ export function getMembershipScriptInfo(): MembershipScriptInfo {
  *
  * @param communityId - Community UUID (hashed into `args`)
  */
-export function buildMembershipTypeScript(communityId: string): Script {
+export function buildMembershipTypeScript(communityId: string): ScriptLike {
   const info = getMembershipScriptInfo();
   return {
     codeHash: info.codeHash,

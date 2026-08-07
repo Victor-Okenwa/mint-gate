@@ -147,16 +147,15 @@ export async function buildJoinMembershipTransaction(
   );
 
   const paymentCapacity =
-    mintPriceCkb > 0 ? ccc.fixedPointFrom(mintPriceCkb) : 0n;
+    mintPriceCkb > 0 ? ccc.fixedPointFrom(mintPriceCkb) : BigInt(0);
 
-  const outputs: ccc.CellOutputLike[] = [];
+  const outputs = [];
   const outputsData: ccc.HexLike[] = [];
 
-  if (paymentCapacity > 0n) {
+  if (paymentCapacity > BigInt(0)) {
     outputs.push({
       capacity: paymentCapacity,
       lock: creatorLock,
-      type: undefined,
     });
     outputsData.push("0x");
   }

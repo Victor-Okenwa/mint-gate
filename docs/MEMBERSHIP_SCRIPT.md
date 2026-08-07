@@ -77,7 +77,7 @@ Use [`buildCommunityCellData`](../lib/ckb/community-cell.ts) / [`encodeCommunity
 | **Type.codeHash** | Deployed membership script (`NEXT_PUBLIC_MEMBERSHIP_CODE_HASH`) |
 | **Type.hashType** | As deployed (`type` or `data1`) |
 | **Type.args** | `blake2b256(communityId)` |
-| **Capacity** | Enough for occupied capacity + data (constant TBD after script size known) |
+| **Capacity** | Minimal occupied capacity from lock + type + data (CCC `CellOutput.from`) |
 | **Data** | UTF-8 JSON as hex |
 
 ### Data schema (`MembershipCellData`)
@@ -152,7 +152,7 @@ Implemented in `contracts-rs/contracts/membership` (see that crate’s README).
 | 2 | Rust membership Type Script + tests | Done (`make build` → `contracts-rs/build/release/membership`) |
 | 3 | Deploy testnet + env / constants | Done (wiring + docs; you still run the real deploy tx) |
 | 4 | Update create-community cell data | Done (`buildCommunityCellData` on create) |
-| 5 | Join tx builder + UI wiring | Not started |
-| 6 | Manual testnet verify | Not started |
+| 5 | Join tx builder + UI wiring | Done (`lib/ckb/membership.ts` + `CommunityCardJoinButton`) |
+| 6 | Manual testnet verify | Not started (needs REMINDER deploy) |
 
 Update this table as steps land.

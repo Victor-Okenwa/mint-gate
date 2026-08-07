@@ -168,7 +168,12 @@ export default function CommunityPage() {
 
                         {!(communityDetails?.isCreator || communityDetails?.isMember) && (
                             <div>
-                                <CommunityCardJoinButton communityId={String(communityDetails?.communityID)} creatorAddress={String(communityDetails?.creatorAddress)} mintPrice={Number(communityDetails?.mintPrice)} />
+                                <CommunityCardJoinButton
+                                    communityId={String(communityDetails?.communityID)}
+                                    creatorAddress={String(communityDetails?.creatorAddress)}
+                                    mintPrice={Number(communityDetails?.mintPrice)}
+                                    communityTxHash={communityDetails?.txHash}
+                                />
                             </div>
                         )}
                     </section>
