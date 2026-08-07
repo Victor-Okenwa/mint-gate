@@ -20,7 +20,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { ccc } from "@ckb-ccc/connector-react";
 import { toast } from "sonner";
 import { ckbToShannons, ckbToShannonsHex, generateCommunityId } from "@/lib/ckb/xudt";
-import { utf8ToHex } from "@/lib/ckb/hash";
+import {
+    buildCommunityCellData,
+    encodeCommunityCellData,
+} from "@/lib/ckb/community-cell";
 import { InfoIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
@@ -89,13 +92,19 @@ export default function CreateCommunityPage() {
                 return;
             }
 
-
-            const communityData = {
-                id: communityId,
-                creatorAddress
-            };
-
-            const dataHex = utf8ToHex(JSON.stringify(communityData));
+            /**
+             * On-chain community Cell data (A1).
+             * Must match docs/MEMBERSHIP_SCRIPT.md so the membership Type Script
+             * can later read mint price + creator lock via cell_dep on join.
+             * Off-chain metadata (name, description, link) still goes to Postgres.
+             */
+            const creatorLockHash = addressObj.script.hash();
+            const communityCellData = buildCommunityCellData({
+                communityId,
+                creatorLockHash,
+                mintPriceCkb: values.mintPrice,
+            });
+            const dataHex = encodeCommunityCellData(communityCellData);
 
             const capacityHex = ckbToShannonsHex(301);
 
@@ -159,7 +168,10 @@ export default function CreateCommunityPage() {
     return (
         <div className="max-w-lg mx-auto px-6 py-16">
             <h1 className="text-2xl font-bold tracking-tight mb-2">Create Community</h1>
-            <p className="text-sm text-muted-foreground mb-10">Deploy a new on-chain membership community.</p>
+            <p className="text-sm text-muted-foreground mb-10">
+                Deploy a community Cell with on-chain id, creator lock hash, and mint price
+                (membership Type Script reads these on join).
+            </p>
 
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" method="post">

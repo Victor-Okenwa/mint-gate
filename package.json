@@ -6,6 +6,8 @@
   "scripts": {
     "build": "next build",
     "build:contract": "node scripts/build-contract.js",
+    "build:membership": "make -C contracts-rs build",
+    "membership:code-hash": "node scripts/print-membership-code-hash.mjs",
     "start": "next start",
     "dev": "next dev",
     "lint": "eslint .",

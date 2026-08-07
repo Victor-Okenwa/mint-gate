@@ -16,6 +16,23 @@
       ]
     }
   },
-  "testnet": {},
+  "testnet": {
+    "membership": {
+      "codeHash": "0xYOUR_MEMBERSHIP_CODE_HASH",
+      "hashType": "data1",
+      "cellDeps": [
+        {
+          "cellDep": {
+            "outPoint": {
+              "txHash": "0xYOUR_MEMBERSHIP_DEP_TX_HASH",
+              "index": 0
+            },
+            "depType": "code"
+          }
+        }
+      ],
+      "_comment": "Fill after deploy. See docs/MEMBERSHIP_DEPLOY.md. codeHash = pnpm membership:code-hash"
+    }
+  },
   "mainnet": {}
 }

@@ -12,6 +12,21 @@ Working checklist for Phase 1 work that mentors and DevRel asked for: **chain-tr
 
 ---
 
+## REMINDER — Testnet membership script deploy (deferred while local)
+
+> **Do this before any real on-chain join that must run the Type Script.**  
+> Skipped for now so we can keep coding locally. Wiring + docs already exist.
+
+- [ ] **TODO before live join / A1 “done when”:** Deploy `contracts-rs/build/release/membership` to **CKB testnet** (or local OffCKB/devnet)
+- [ ] Run `pnpm membership:code-hash` and set `NEXT_PUBLIC_MEMBERSHIP_CODE_HASH`
+- [ ] Set `NEXT_PUBLIC_MEMBERSHIP_DEP_TX_HASH` + `NEXT_PUBLIC_MEMBERSHIP_DEP_INDEX` after deploy
+- [ ] Update [`deployment/scripts.json`](./deployment/scripts.json) `testnet.membership` with the live outPoint
+- [ ] Follow [`docs/MEMBERSHIP_DEPLOY.md`](./docs/MEMBERSHIP_DEPLOY.md)
+
+Agent: when implementing join (A1 Part 5) or claiming A1 complete, **remind the user** if these boxes are still unchecked.
+
+---
+
 ## Build order
 
 - [ ] **1. Pillar A** — Membership Cell + confirm + verify + indexer
@@ -33,20 +48,30 @@ Working checklist for Phase 1 work that mentors and DevRel asked for: **chain-tr
 
 **Goal:** Joining a community mints an on-chain membership Cell locked to the member. Membership is proven by that Cell (soulbound / non-transferable by default), not only a `members` row.
 
+**A1 implementation steps (local):**
+
+- [x] Spec + `lib/ckb/community-cell.ts` (Part 1)
+- [x] Rust Type Script + host tests + RISC-V binary (Part 2)
+- [x] Env/constants + deploy docs — real testnet tx deferred (Part 3; see REMINDER above)
+- [x] Align create-community on-chain cell data (Part 4)
+- [ ] Join tx builder + UI wiring (Part 5)
+- [ ] Manual verify once script is deployed (Part 6)
+
 **How to achieve it:**
 
-- [ ] Design a Type Script (shared code + `communityId` in args, or equivalent) that validates membership mint conditions
+- [x] Design a Type Script (shared code + `communityId` in args, or equivalent) that validates membership mint conditions
 - [ ] Change the join transaction so it: (1) pays the gate fee to the creator lock, and (2) creates a typed membership output locked to the joiner
-- [ ] Encode enough facts in cell data / witness (`communityId`, member identity, fee metadata as needed) to rebuild membership from chain alone
-- [ ] Align create-community on-chain shape so membership Cells can reference the community consistently
-- [ ] Prefer Rust + `ckb-std` + `ckb-testtool`; deploy on **testnet** first ([`ckbagents.md`](./ckbagents.md), [CKB docs](https://docs.nervos.org/docs))
-- [ ] Do **not** default every community to xUDT; membership Cell first
+- [x] Encode enough facts in cell data / witness (`communityId`, member identity, fee metadata as needed) to rebuild membership from chain alone
+- [x] Align create-community on-chain shape so membership Cells can reference the community consistently
+- [x] Prefer Rust + `ckb-std`; binary via `contracts-rs` (`make build`)
+- [ ] **Deploy Type Script on testnet** — deferred while local; see REMINDER section ([`docs/MEMBERSHIP_DEPLOY.md`](./docs/MEMBERSHIP_DEPLOY.md))
+- [x] Do **not** default every community to xUDT; membership Cell first
 
 **Done when:**
 
-- [ ] Type Script deployed on testnet with published code hash / deploy notes
+- [ ] Type Script deployed on testnet with published code hash / deploy notes *(deferred — REMINDER)*
 - [ ] Successful join creates a live membership Cell for the member
-- [ ] Script rejects invalid join shapes in tests (success + failure cases)
+- [x] Script rejects invalid join shapes in host/unit tests (VM `ckb-testtool` cases can expand later)
 
 ### A2. Confirmations (mempool ≠ membership)
 
@@ -348,7 +373,8 @@ Do not block Phase 1 grant-friendliness on these:
 
 | Goal | Status |
 |------|--------|
-| A1 Membership Cell + Type Script | [ ] |
+| A1 Membership Cell + Type Script | [ ] in progress (Parts 1–4 done; join + **testnet deploy** left) |
+| A1 testnet script deploy (deferred) | [ ] **REMINDER** — see section above |
 | A2 Confirmations | [ ] |
 | A3 Server verification | [ ] |
 | A4 Basic indexer | [ ] |

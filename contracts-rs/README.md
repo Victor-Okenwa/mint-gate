@@ -45,7 +45,12 @@ make build
 | 1 → 0 | Burn/leave: ok |
 | 1 → 1 | Transfer: reject |
 
-## Next A1 steps (not this folder alone)
+## Next A1 steps
 
-- Deploy binary to testnet → fill `NEXT_PUBLIC_MEMBERSHIP_*`  
-- Wire create/join in the Next.js app  
+- Deploy binary to testnet → fill `NEXT_PUBLIC_MEMBERSHIP_*` (see [`docs/MEMBERSHIP_DEPLOY.md`](../docs/MEMBERSHIP_DEPLOY.md))
+- Wire create/join in the Next.js app
+
+```bash
+pnpm build:membership
+pnpm membership:code-hash
+```
