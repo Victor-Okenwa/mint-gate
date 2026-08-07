@@ -1,0 +1,17 @@
+# Workspace for Mint Gate on-chain Scripts (CKB-VM / RISC-V).
+# See contracts-rs/README.md and docs/MEMBERSHIP_SCRIPT.md.
+#
+# Build (after riscv64 target is installed):
+#   cd contracts-rs && make build
+#   # or: cargo build --target=riscv64imac-unknown-none-elf --release -p membership
+
+[workspace]
+resolver = "2"
+members = ["contracts/membership", "tests"]
+
+[profile.release]
+overflow-checks = true
+opt-level = "s"
+lto = false
+codegen-units = 1
+strip = true

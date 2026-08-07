@@ -127,7 +127,7 @@ Count cells in the script **group** (same type script as the one running):
 | 1 | 1 | Transfer | **Reject** (soulbound — no reassignment to another lock) |
 | other | other | Invalid | Reject |
 
-Detailed Rust validation lands in a later A1 step (script workspace). This doc defines the intended rules.
+Implemented in `contracts-rs/contracts/membership` (see that crate’s README).
 
 ---
 
@@ -149,7 +149,7 @@ Detailed Rust validation lands in a later A1 step (script workspace). This doc d
 | Step | Content | Status |
 |------|---------|--------|
 | 1 | This spec + `lib/ckb/community-cell.ts` | Done |
-| 2 | Rust membership Type Script + tests | Not started |
+| 2 | Rust membership Type Script + tests | Done (`make build` → `contracts-rs/build/release/membership`) |
 | 3 | Deploy testnet + env / constants | Not started |
 | 4 | Update create-community cell data | Not started |
 | 5 | Join tx builder + UI wiring | Not started |

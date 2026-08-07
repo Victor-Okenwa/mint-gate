@@ -1,0 +1,13 @@
+[package]
+name = "membership-tests"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Host tests and future ckb-testtool cases for membership"
+
+[dependencies]
+membership = { path = "../contracts/membership" }
+
+[dev-dependencies]
+# Full VM tests with ckb-testtool will be added after the script binary builds cleanly.
+# Why later: ckb-testtool pulls a large dependency tree; Part 2 validates parse + structure first.
