@@ -19,9 +19,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { ccc } from "@ckb-ccc/connector-react";
 import { toast } from "sonner";
-import { ckbToShannons, ckbToShannonsHex, generateCommunityId } from "@/lib/ckb/xudt";
+import { generateCommunityId } from "@/lib/ckb/xudt";
 import {
     buildCommunityCellData,
+    computeCommunityCellCapacityShannons,
+    CREATE_FEE_BUFFER_CKB,
     encodeCommunityCellData,
 } from "@/lib/ckb/community-cell";
 import { InfoIcon } from "lucide-react";
@@ -87,11 +89,6 @@ export default function CreateCommunityPage() {
                 return;
             }
 
-            if (balance < ckbToShannons(301)) {
-                toast.error("Insufficient balance (min 301 CKB)");
-                return;
-            }
-
             /**
              * On-chain community Cell data (A1).
              * Must match docs/MEMBERSHIP_SCRIPT.md so the membership Type Script
@@ -106,12 +103,25 @@ export default function CreateCommunityPage() {
             });
             const dataHex = encodeCommunityCellData(communityCellData);
 
-            const capacityHex = ckbToShannonsHex(301);
+            /** Occupied capacity from lock + data size (not a fixed 301 CKB). */
+            const cellCapacity = computeCommunityCellCapacityShannons(
+                addressObj.script,
+                dataHex,
+            );
+            const feeBuffer = ccc.fixedPointFrom(CREATE_FEE_BUFFER_CKB);
+            const requiredBalance = cellCapacity + feeBuffer;
+
+            if (balance < requiredBalance) {
+                toast.error(
+                    `Insufficient balance (need ~${ccc.fixedPointToString(requiredBalance)} CKB: cell capacity + ~${CREATE_FEE_BUFFER_CKB} CKB fee buffer)`,
+                );
+                return;
+            }
 
             const unsignedTx = ccc.Transaction.from({
                 outputs: [
                     {
-                        capacity: capacityHex,
+                        capacity: cellCapacity,
                         lock: addressObj.script,
                         type: undefined,
                     },
@@ -125,7 +135,9 @@ export default function CreateCommunityPage() {
             const signedTx = await signer.signTransaction(unsignedTx);
             const txHash = await signer.sendTransaction(signedTx);
 
-            console.log("Community deployed:", txHash);
+            console.log("Community deployed:", txHash, {
+                cellCapacityCkb: ccc.fixedPointToString(cellCapacity),
+            });
 
             setIsDeploying(true);
 
@@ -154,7 +166,9 @@ export default function CreateCommunityPage() {
             console.error("handleSubmit error:", error);
             const msg = (error as Error)?.message ?? String(error);
             if (msg.toLowerCase().includes("capacity") || msg.toLowerCase().includes("insufficient")) {
-                toast.error("Insufficient CKB balance. You need about 301 CKB plus fees.");
+                toast.error(
+                    "Insufficient CKB balance for cell capacity plus network fees.",
+                );
             } else {
                 // show the raw message to help debugging
                 toast.error(msg);
@@ -292,7 +306,14 @@ export default function CreateCommunityPage() {
                         )}
                     />
 
-                    <div className="text-xs text-muted-foreground flex items-center gap-2 mt-4"> <InfoIcon className="size-4" /> Deloying a community will cost you 301 CKB plus fees.</div>
+                    <div className="text-xs text-muted-foreground flex items-start gap-2 mt-4">
+                        <InfoIcon className="size-4 shrink-0 mt-0.5" />
+                        <span>
+                            On-chain cost is the community Cell&apos;s{" "}
+                            <strong>occupied capacity</strong> (sized from lock + stored data)
+                            plus network fees.
+                        </span>
+                    </div>
 
                     <Button
                         type="submit"

@@ -5,8 +5,8 @@
  * via {@link utf8ToHex}. Shapes are documented in
  * {@link file://docs/MEMBERSHIP_SCRIPT.md}.
  *
- * This module does **not** build or send transactions — it only encodes,
- * decodes, and derives Type Script args. Create/join wiring comes in later A1 steps.
+ * This module encodes/decodes cell data and derives Type Script args.
+ * Join tx building lives in {@link file://./membership.ts}.
  */
 
 import { CKB_SHANNON_VALUE, SHANNONS_PER_CKB } from "@/contracts/constants";
@@ -16,6 +16,7 @@ import {
   hexToUtf8,
   utf8ToHex,
 } from "@/lib/ckb/hash";
+import { CellOutput, type HexLike, type ScriptLike } from "@ckb-ccc/core";
 
 /**
  * JSON payload stored in the community capacity Cell at create time.
@@ -172,12 +173,32 @@ export function buildMembershipCellData(props: {
 }
 
 /**
- * Suggested minimum capacity (CKB) for a membership Cell before exact
- * occupied-capacity calculation is wired. Placeholder until script deploy
- * sizes are known — tune using CCC occupied capacity helpers later.
+ * Minimal capacity (shannons) for a community Cell = occupied size of
+ * lock (+ optional type) + `outputData` bytes.
  *
- * Reuses the project’s existing capacity ballpark constant where useful;
- * create still uses 301 CKB separately.
+ * Uses CCC {@link CellOutput.from} automatic capacity when capacity is omitted.
+ *
+ * @param lock - Creator lock script
+ * @param dataHex - Encoded {@link CommunityCellData} (`0x…`)
+ * @returns Capacity in shannons (bigint)
+ */
+export function computeCommunityCellCapacityShannons(
+  lock: ScriptLike,
+  dataHex: HexLike,
+): bigint {
+  const output = CellOutput.from({ lock }, dataHex);
+  return output.capacity;
+}
+
+/**
+ * Extra CKB reserved in the balance check for network fees
+ * (`completeFeeBy`). Not locked in the community Cell itself.
+ */
+export const CREATE_FEE_BUFFER_CKB = 1;
+
+/**
+ * Legacy ballpark (CKB). Join uses occupied capacity via
+ * `computeMembershipCellCapacityShannons` in `lib/ckb/membership.ts`.
  */
 export const DEFAULT_MEMBERSHIP_CAPACITY_CKB = CKB_SHANNON_VALUE;
 

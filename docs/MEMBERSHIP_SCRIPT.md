@@ -46,7 +46,7 @@ Created when a creator deploys a community. Used later as a **cell_dep** so the 
 |-------|----------|
 | **Lock** | Creator’s lock script |
 | **Type** | None |
-| **Capacity** | Enough for occupied capacity + data (today ~301 CKB; may tune later) |
+| **Capacity** | Minimal occupied capacity from lock + data (CCC `CellOutput.from`; dApp computes dynamically) |
 | **Data** | UTF-8 JSON, stored as hex via `utf8ToHex` |
 
 ### Data schema (`CommunityCellData`)
