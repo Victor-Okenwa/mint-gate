@@ -11,7 +11,7 @@ While implementing grant-friendly / Phase 1 work for Mint Gate:
 2. **Follow the build order** in `grant-goals.md` (Pillar A → C → B → D, with noted overlaps). Work on **one goal at a time** (e.g. A1, then A2). Do not skip ahead or start the next goal unprompted.
 3. When starting or continuing work, open `grant-goals.md`, find the current goal, and implement against its “How to achieve it” and “Done when” items.
 4. Do not expand into deferred Phase 2 items (Vellum reputation, mini-DAO governance, marketplace, etc.) unless the user explicitly asks.
-5. **Testnet membership deploy is deferred while working locally.** Keep the REMINDER section in `grant-goals.md` accurate. Remind the user about testnet/OffCKB deploy before treating join as live or marking A1 complete (see `docs/MEMBERSHIP_DEPLOY.md`).
+5. **Testnet membership script is deployed** (see REMINDER in `grant-goals.md`). Before treating A1 as complete, remind the user that **Part 6** (manual create + join verify) must succeed. Redeploy notes: `docs/MEMBERSHIP_DEPLOY.md`.
 
 ## Completing a goal
 

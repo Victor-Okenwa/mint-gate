@@ -12,18 +12,23 @@ Working checklist for Phase 1 work that mentors and DevRel asked for: **chain-tr
 
 ---
 
-## REMINDER — Testnet membership script deploy (deferred while local)
+## REMINDER — Testnet membership script deploy
 
-> **Do this before any real on-chain join that must run the Type Script.**  
-> Skipped for now so we can keep coding locally. Wiring + docs already exist.
+> **Done on testnet (2026-09-05).** Code Cell is live; env + `deployment/scripts.json` are wired.  
+> Still required before claiming **A1 complete**: Part 6 manual create + join verify.
 
-- [ ] **TODO before live join / A1 “done when”:** Deploy `contracts-rs/build/release/membership` to **CKB testnet** (or local OffCKB/devnet)
-- [ ] Run `pnpm membership:code-hash` and set `NEXT_PUBLIC_MEMBERSHIP_CODE_HASH`
-- [ ] Set `NEXT_PUBLIC_MEMBERSHIP_DEP_TX_HASH` + `NEXT_PUBLIC_MEMBERSHIP_DEP_INDEX` after deploy
-- [ ] Update [`deployment/scripts.json`](./deployment/scripts.json) `testnet.membership` with the live outPoint
-- [ ] Follow [`docs/MEMBERSHIP_DEPLOY.md`](./docs/MEMBERSHIP_DEPLOY.md)
+- [x] Deploy `contracts-rs/build/release/membership` to **CKB testnet**
+- [x] Run `pnpm membership:code-hash` and set `NEXT_PUBLIC_MEMBERSHIP_CODE_HASH`
+- [x] Set `NEXT_PUBLIC_MEMBERSHIP_DEP_TX_HASH` + `NEXT_PUBLIC_MEMBERSHIP_DEP_INDEX` after deploy
+- [x] Update [`deployment/scripts.json`](./deployment/scripts.json) `testnet.membership` with the live outPoint
+- [x] Follow [`docs/MEMBERSHIP_DEPLOY.md`](./docs/MEMBERSHIP_DEPLOY.md)
 
-Agent: when implementing join (A1 Part 5) or claiming A1 complete, **remind the user** if these boxes are still unchecked.
+Live outPoint (testnet):
+
+- codeHash: `0x5ecf5624466f08e329de4b10184157949675dc8ecc785751f59a6eb4338c25a4` (`data1`)
+- dep tx: `0xd80a6ee0d5ddefff4e51389949085fc82aa3473329cda9ac45cdff4bffae481a` index `0`
+
+Agent: before claiming A1 complete, confirm Part 6 (successful join mints a live membership Cell).
 
 ---
 
@@ -52,24 +57,24 @@ Agent: when implementing join (A1 Part 5) or claiming A1 complete, **remind the 
 
 - [x] Spec + `lib/ckb/community-cell.ts` (Part 1)
 - [x] Rust Type Script + host tests + RISC-V binary (Part 2)
-- [x] Env/constants + deploy docs — real testnet tx deferred (Part 3; see REMINDER above)
+- [x] Env/constants + deploy docs + testnet deploy (Part 3; see REMINDER above)
 - [x] Align create-community on-chain cell data (Part 4)
-- [ ] Join tx builder + UI wiring (Part 5)
+- [x] Join tx builder + UI wiring (Part 5)
 - [ ] Manual verify once script is deployed (Part 6)
 
 **How to achieve it:**
 
 - [x] Design a Type Script (shared code + `communityId` in args, or equivalent) that validates membership mint conditions
-- [ ] Change the join transaction so it: (1) pays the gate fee to the creator lock, and (2) creates a typed membership output locked to the joiner
+- [x] Change the join transaction so it: (1) pays the gate fee to the creator lock, and (2) creates a typed membership output locked to the joiner
 - [x] Encode enough facts in cell data / witness (`communityId`, member identity, fee metadata as needed) to rebuild membership from chain alone
 - [x] Align create-community on-chain shape so membership Cells can reference the community consistently
 - [x] Prefer Rust + `ckb-std`; binary via `contracts-rs` (`make build`)
-- [ ] **Deploy Type Script on testnet** — deferred while local; see REMINDER section ([`docs/MEMBERSHIP_DEPLOY.md`](./docs/MEMBERSHIP_DEPLOY.md))
+- [x] **Deploy Type Script on testnet** — see REMINDER ([`docs/MEMBERSHIP_DEPLOY.md`](./docs/MEMBERSHIP_DEPLOY.md))
 - [x] Do **not** default every community to xUDT; membership Cell first
 
 **Done when:**
 
-- [ ] Type Script deployed on testnet with published code hash / deploy notes *(deferred — REMINDER)*
+- [x] Type Script deployed on testnet with published code hash / deploy notes
 - [ ] Successful join creates a live membership Cell for the member
 - [x] Script rejects invalid join shapes in host/unit tests (VM `ckb-testtool` cases can expand later)
 

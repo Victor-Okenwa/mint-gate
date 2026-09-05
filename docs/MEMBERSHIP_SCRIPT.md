@@ -150,9 +150,9 @@ Implemented in `contracts-rs/contracts/membership` (see that crate’s README).
 |------|---------|--------|
 | 1 | This spec + `lib/ckb/community-cell.ts` | Done |
 | 2 | Rust membership Type Script + tests | Done (`make build` → `contracts-rs/build/release/membership`) |
-| 3 | Deploy testnet + env / constants | Done (wiring + docs; you still run the real deploy tx) |
+| 3 | Deploy testnet + env / constants | Done (tx `0xd80a6ee0…481a`, index `0`) |
 | 4 | Update create-community cell data | Done (`buildCommunityCellData` on create) |
 | 5 | Join tx builder + UI wiring | Done (`lib/ckb/membership.ts` + `CommunityCardJoinButton`) |
-| 6 | Manual testnet verify | Not started (needs REMINDER deploy) |
+| 6 | Manual testnet verify | Not started |
 
 Update this table as steps land.

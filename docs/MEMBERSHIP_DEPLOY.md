@@ -1,7 +1,7 @@
 # Deploy membership Type Script (A1 Part 3)
 
-> **Deferred while developing locally.** Env wiring and `codeHash` tooling are ready; you do **not** need a live testnet Cell until a real on-chain join.  
-> Tracked in [`grant-goals.md`](../grant-goals.md) under **REMINDER — Testnet membership script deploy**. Come back here before claiming A1 complete.
+> **Testnet deploy completed 2026-09-05.** Live values are in `.env.local` and [`deployment/scripts.json`](../deployment/scripts.json).  
+> Tracked in [`grant-goals.md`](../grant-goals.md) under **REMINDER**. Part 6 (manual join verify) still open before A1 complete.
 
 How to put the RISC-V binary on **CKB testnet** (or devnet) and wire Mint Gate env vars.
 
@@ -131,8 +131,8 @@ Join/create wiring (Parts 4–5) will call these helpers when building transacti
 
 ## Checklist
 
-- [ ] `make build` produces `contracts-rs/build/release/membership`
-- [ ] `pnpm membership:code-hash` matches your binary
-- [ ] Script Cell live on testnet (or devnet)
-- [ ] `.env.local` filled with code hash + dep outPoint
-- [ ] `deployment/scripts.json` updated for the network you used
+- [x] `make build` produces `contracts-rs/build/release/membership`
+- [x] `pnpm membership:code-hash` matches your binary
+- [x] Script Cell live on testnet (tx `0xd80a6ee0…481a`, index `0`)
+- [x] `.env.local` filled with code hash + dep outPoint
+- [x] `deployment/scripts.json` updated for the network you used
