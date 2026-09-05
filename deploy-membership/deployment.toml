@@ -1,9 +1,9 @@
 [[cells]]
 name = "membership"
-enable_type_id = false   # A1: immutable data1, not Type ID upgrade
+enable_type_id = false
 location = { file = "contracts/membership" }
 
-# Lock that owns the deployed code Cell (your secp256k1 sighash)
-code_hash=0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8
+[lock]
+code_hash = "0x9bd7e06f3ecf4be0f2fcd2188b23f1b9fcc88e5d4b65a8637b17723bbda3cce8"
 hash_type = "type"
-args=0xfa352b04fc3327814e611645d099f7f45cb6a4ee
+args = "0xfa352b04fc3327814e611645d099f7f45cb6a4ee"

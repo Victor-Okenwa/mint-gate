@@ -46,7 +46,7 @@ export const MEMBERSHIP_HASH_TYPE = (process.env
 /** Transaction hash of the Cell that stores the membership binary. */
 export const MEMBERSHIP_DEP_TX_HASH =
   process.env.NEXT_PUBLIC_MEMBERSHIP_DEP_TX_HASH ??
-  "0xYOUR_MEMBERSHIP_DEP_TX_HASH";
+  "0";
 
 /** Output index of that code Cell (decimal string or number in env). */
 export const MEMBERSHIP_DEP_INDEX =
